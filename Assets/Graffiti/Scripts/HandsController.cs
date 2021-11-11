@@ -3,6 +3,15 @@
 public class HandsController : MonoBehaviour
 {
     [SerializeField]
+    private GameObject leftBrush;
+    [SerializeField]
+    private GameObject rightBrush;
+    [SerializeField]
+    private Camera canvasCamera;
+    [SerializeField]
+    private Camera vrCamera;
+
+    [SerializeField]
     private OVRHand leftHand;
     [SerializeField]
     private OVRHand rightHand;
@@ -17,16 +26,25 @@ public class HandsController : MonoBehaviour
         // enable or disable hands light with animation
         UpdateHandLight(leftHandLight, leftHand);
         UpdateHandLight(rightHandLight, rightHand);
+
+        // draw into texture
+        UpdateBrush(leftHandLight, leftBrush);
+        UpdateBrush(rightHandLight, rightBrush);
     }
 
     private void UpdateHandLight(HandLight handLight, OVRHand hand)
     {
+        if (Application.isEditor)
+        {
+            return;
+        }
+
         float angleScale = 30.0f;
         float distanceScale = 20.0f;
-        float minimalHandPower = 0.9f;
+        float minimalHandPower = 0.75f;
         float power = GetHandPower(hand);
 
-        float smoothing = 0.1f;
+        float smoothing = 0.25f;
         float targetAngle = Mathf.Max(0, (power - minimalHandPower) * angleScale);
         float targetDistance = Mathf.Max(0, (power - minimalHandPower) * distanceScale);
         if (!OVRManager.hasInputFocus)
@@ -36,7 +54,28 @@ public class HandsController : MonoBehaviour
         }
         handLight.angle = Mathf.Lerp(handLight.angle, targetAngle, smoothing);
         handLight.distance = Mathf.Lerp(handLight.distance, targetDistance, smoothing);
-        handLight.gameObject.SetActive(handLight.angle > 0);
+    }
+
+    private void UpdateBrush(HandLight handLight, GameObject brush)
+    {
+        Ray ray;
+        if (Application.isEditor)
+        {
+            brush.SetActive(Input.GetMouseButton(0));
+            ray = vrCamera.ScreenPointToRay(Input.mousePosition);
+        } else
+        {
+            brush.SetActive(handLight.angle > 1);
+            ray = new Ray(handLight.transform.position, handLight.transform.forward);
+        }
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 10))
+        {
+            if (hit.collider.gameObject != null)
+            {
+                brush.transform.localPosition = hit.textureCoord - Vector2.one * canvasCamera.orthographicSize;
+            }
+        }
     }
 
     // calculates hand power from pinch strength, low power for low confidence

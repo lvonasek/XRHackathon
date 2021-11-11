@@ -24,6 +24,7 @@ public class HandLight : MonoBehaviour
     private GameObject lightVolume;
 
     private Quaternion lastRotation;
+    private float lastParticleSpeed;
 
     void LateUpdate()
     {
@@ -56,13 +57,18 @@ public class HandLight : MonoBehaviour
         float volumeScaling = distance * 0.04f;
         float volumeSize = angle * volumeScaling;
         ParticleSystem.ShapeModule shape = lightParticles.shape;
-        shape.angle = angle;
+        shape.angle = angle * 0.5f;
 
         // update light distance
         float emissionScale = 0.0025f;
-        float particleLifeScale = 0.1f;
-        lightEmission.transform.localScale = Vector3.one * distance * emissionScale;
+        lightEmission.transform.localScale = Vector3.one * (distance * emissionScale + emissionScale);
         lightVolume.transform.localScale = new Vector3(volumeSize, distance, volumeSize);
-        lightParticles.startLifetime = distance * particleLifeScale;
+
+        // update particle speed
+        float minimalSpeed = 0.1f;
+        float speedSmoothing = 0.05f;
+        float targetSpeed = distance + minimalSpeed;
+        lightParticles.playbackSpeed = Mathf.Lerp(lightParticles.playbackSpeed, targetSpeed, speedSmoothing);
+        lastParticleSpeed = lightParticles.playbackSpeed;
     }
 }
