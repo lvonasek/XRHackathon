@@ -351,6 +351,18 @@ MonoBehaviour:
   edgeRenderingEnabled_: 0
   edgeColor_: {r: 1, g: 1, b: 1, a: 1}
   colorMapType: 0
+--- !u!114 &876558778 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 11400010, guid: 126d619cf4daa52469682f85c1378b4a,
+    type: 3}
+  m_PrefabInstance: {fileID: 246759779}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876558772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df9f338034892c44ebb62d97894772f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &900225369
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -418,6 +430,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
+        type: 3}
+      propertyPath: hand
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
+        type: 3}
+      propertyPath: tracking
+      value: 
+      objectReference: {fileID: 876558778}
     - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
         type: 3}
       propertyPath: defaultRotation.x
@@ -1011,6 +1033,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
+        type: 3}
+      propertyPath: hand
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
+        type: 3}
+      propertyPath: tracking
+      value: 
+      objectReference: {fileID: 876558778}
     - target: {fileID: 6618360912272065691, guid: 472343ab739ad4756b585e73fc47c36c,
         type: 3}
       propertyPath: defaultRotation.x

@@ -29,6 +29,11 @@ public class HandsController : MonoBehaviour
         float smoothing = 0.1f;
         float targetAngle = Mathf.Max(0, (power - minimalHandPower) * angleScale);
         float targetDistance = Mathf.Max(0, (power - minimalHandPower) * distanceScale);
+        if (!OVRManager.hasInputFocus)
+        {
+            targetAngle = 0;
+            targetDistance = 0;
+        }
         handLight.angle = Mathf.Lerp(handLight.angle, targetAngle, smoothing);
         handLight.distance = Mathf.Lerp(handLight.distance, targetDistance, smoothing);
         handLight.gameObject.SetActive(handLight.angle > 0);
@@ -38,17 +43,11 @@ public class HandsController : MonoBehaviour
     private float GetHandPower(OVRHand hand)
     {
         float output = 0;
-        for (int i = 0; i < (int)OVRHand.HandFinger.Max; i++)
+        OVRHand.HandFinger finger = OVRHand.HandFinger.Index;
+        if (hand.GetFingerConfidence(finger).CompareTo(OVRPlugin.TrackingConfidence.High) == 0)
         {
-            OVRHand.HandFinger finger = (OVRHand.HandFinger)i;
-            if (hand.GetFingerConfidence(finger).CompareTo(OVRPlugin.TrackingConfidence.High) == 0)
-            {
-                output += hand.GetFingerPinchStrength(finger);
-            } else
-            {
-                output += 1.0f;
-            }
+            output += hand.GetFingerPinchStrength(finger);
         }
-        return 1.0f - output / (float)OVRHand.HandFinger.Max;
+        return output;
     }
 }

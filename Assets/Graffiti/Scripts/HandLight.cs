@@ -8,7 +8,13 @@ public class HandLight : MonoBehaviour
     [SerializeField]
     private Vector3 defaultRotation;
     [SerializeField]
+    float preferCameraHandRotationThreshold = 0.5f;
+    [SerializeField]
     private float rotationSmoothing = 0.1f;
+    [SerializeField]
+    private float rotationStabilizing = 0.5f;
+    [SerializeField]
+    private OVRCameraRig tracking;
 
     [SerializeField]
     private GameObject lightEmission;
@@ -27,8 +33,22 @@ public class HandLight : MonoBehaviour
             lightVolume.transform.GetChild(i).rotation = Quaternion.LookRotation((lightVolume.transform.GetChild(i).position - Camera.main.transform.position).normalized);
         }
 
-        // smooth rotation of the hand
+        // calculate camera-hand rotation
+        Vector3 cameraPosition = tracking.centerEyeAnchor.position;
+        Vector3 handPosition = transform.position;
+        Quaternion cameraHandRotation = Quaternion.LookRotation(handPosition - cameraPosition, Vector3.up);
+
+        // stabilize rotation of the hand light if the rotation is close to camera-hand rotation
         transform.localRotation = Quaternion.Euler(defaultRotation);
+        float directionCorrectness = Vector3.Dot(transform.forward, tracking.centerEyeAnchor.forward);
+        float smoothingDecrease = Mathf.Max(0, preferCameraHandRotationThreshold - directionCorrectness);
+        float lerp = rotationStabilizing - smoothingDecrease;
+        if (lerp > 0)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, cameraHandRotation, lerp);
+        }
+
+        // smooth rotation of the hand light
         transform.rotation = Quaternion.Lerp(lastRotation, transform.rotation, rotationSmoothing);
         lastRotation = transform.rotation;
 

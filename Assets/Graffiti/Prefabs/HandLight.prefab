@@ -6108,9 +6108,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76cf5834e663e4a729cd394a6c0ba55a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  angle: 5
   distance: 4
   defaultRotation: {x: 0, y: 0, z: 0}
+  preferCameraHandRotationThreshold: 0.5
   rotationSmoothing: 0.1
+  rotationStabilizing: 0.5
+  tracking: {fileID: 0}
   lightEmission: {fileID: 1007675710744357910}
   lightParticles: {fileID: 3124661204056908320}
   lightVolume: {fileID: 146887886877637028}
