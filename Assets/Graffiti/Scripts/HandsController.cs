@@ -81,6 +81,7 @@ public class HandsController : MonoBehaviour
     // calculates hand power from pinch strength, low power for low confidence
     private float GetHandPower(OVRHand hand)
     {
+#if USE_HANDS
         float output = 0;
         OVRHand.HandFinger finger = OVRHand.HandFinger.Index;
         if (hand.GetFingerConfidence(finger).CompareTo(OVRPlugin.TrackingConfidence.High) == 0)
@@ -88,5 +89,18 @@ public class HandsController : MonoBehaviour
             output += hand.GetFingerPinchStrength(finger);
         }
         return output;
+#else
+        OVRInput.Controller controller = OVRInput.Controller.Touch;
+        switch (hand.HandType)
+		{
+            case OVRHand.Hand.HandLeft:
+                controller = OVRInput.Controller.LTouch;
+                break;
+            case OVRHand.Hand.HandRight:
+                controller = OVRInput.Controller.RTouch;
+                break;
+		}
+        return OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, controller) ? 1 : 0;
+#endif
     }
 }

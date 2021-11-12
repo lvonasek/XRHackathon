@@ -45,7 +45,7 @@ public class OVRHand : MonoBehaviour,
 	}
 
 	[SerializeField]
-	private Hand HandType = Hand.None;
+	public Hand HandType = Hand.None;
 	[SerializeField]
 	private Transform _pointerPoseRoot = null;
 	private GameObject _pointerPoseGO;

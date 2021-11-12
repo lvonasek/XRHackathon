@@ -34,11 +34,13 @@ public class HandLight : MonoBehaviour
             lightVolume.transform.GetChild(i).rotation = Quaternion.LookRotation((lightVolume.transform.GetChild(i).position - Camera.main.transform.position).normalized);
         }
 
+#if USE_HANDS
+
         // calculate camera-hand rotation
         Vector3 cameraPosition = tracking.centerEyeAnchor.position;
         Vector3 handPosition = transform.position;
         Quaternion cameraHandRotation = Quaternion.LookRotation(handPosition - cameraPosition, Vector3.up);
-
+        
         // stabilize rotation of the hand light if the rotation is close to camera-hand rotation
         transform.localRotation = Quaternion.Euler(defaultRotation);
         float directionCorrectness = Vector3.Dot(transform.forward, tracking.centerEyeAnchor.forward);
@@ -48,10 +50,11 @@ public class HandLight : MonoBehaviour
         {
             transform.rotation = Quaternion.Lerp(transform.rotation, cameraHandRotation, lerp);
         }
-
+        
         // smooth rotation of the hand light
         transform.rotation = Quaternion.Lerp(lastRotation, transform.rotation, rotationSmoothing);
         lastRotation = transform.rotation;
+#endif
 
         // update light angle
         float volumeScaling = distance * 0.04f;
