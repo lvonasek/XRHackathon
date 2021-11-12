@@ -17,7 +17,8 @@ public class OVRPassthroughLayer : MonoBehaviour
 	}
 
 	// The type of the surface which passthrough textures are projected on: automatic reconstruction or user-defined geometry.
-	// TODO(T89619271): define and implement behavior of changing this property when the layer is already created
+	// This field can only be modified immediately after the component is instantiated (e.g. using `AddComponent`).
+	// Once the backing layer has been created, changes won't be reflected unless the layer is disabled and enabled again.
 	public ProjectionSurfaceType projectionSurfaceType = ProjectionSurfaceType.Reconstructed;
 
 	// Overlay type: overlay | underlay | none
@@ -44,18 +45,6 @@ public class OVRPassthroughLayer : MonoBehaviour
 	// of the surface mesh every frame. Otherwise only the initial transform is recorded.
 	public void AddSurfaceGeometry(GameObject obj, bool updateTransform = false)
 	{
-		AddSurfaceGeometry(obj, Matrix4x4.identity, updateTransform);
-	}
-
-	// Add a GameObject to the Insight Passthrough projection surface. This is only applicable
-	// if the projection surface type is `UserDefined`.
-	// When `updateTransform` parameter is set to `true`, OVRPassthroughLayer will update the transform
-	// of the surface mesh every frame. Otherwise only the initial transform is recorded.
-	// Calling code can specify additional `worldToTrackingSpace` transform, which will be
-	// applied to the mesh transform each time the transfrom is set or updated.
-	public void AddSurfaceGeometry(
-		GameObject obj, Matrix4x4 worldToTrackingSpace, bool updateTransform = false)
-	{
 		if (projectionSurfaceType != ProjectionSurfaceType.UserDefined)
 		{
 			Debug.LogError("Passthrough layer is not configured for surface projected passthrough.");
@@ -80,8 +69,7 @@ public class OVRPassthroughLayer : MonoBehaviour
 			new DeferredPassthroughMeshAddition
 			{
 				gameObject = obj,
-				updateTransform = updateTransform,
-				worldToTrackingSpace = worldToTrackingSpace
+				updateTransform = updateTransform
 			});
 	}
 
@@ -316,14 +304,13 @@ public class OVRPassthroughLayer : MonoBehaviour
 			{
 				ulong meshHandle;
 				ulong instanceHandle;
-				if (CreateAndAddMesh(entry.gameObject, entry.worldToTrackingSpace, out meshHandle, out instanceHandle))
+				if (CreateAndAddMesh(entry.gameObject, out meshHandle, out instanceHandle))
 				{
 					surfaceGameObjects.Add(entry.gameObject, new PassthroughMeshInstance
 					{
 						meshHandle = meshHandle,
 						instanceHandle = instanceHandle,
-						updateTransform = entry.updateTransform,
-						worldToTrackingSpace = entry.worldToTrackingSpace
+						updateTransform = entry.updateTransform
 					});
 					entryIsPasthroughObject = true;
 				}
@@ -340,20 +327,28 @@ public class OVRPassthroughLayer : MonoBehaviour
 		}
 	}
 
-	private static Matrix4x4 GetTransformMatrixForPassthroughSurfaceObject(
-		GameObject obj, Matrix4x4 worldToTrackingSpace)
+	private Matrix4x4 GetTransformMatrixForPassthroughSurfaceObject(GameObject obj)
 	{
-		Matrix4x4 T_worldUnity_model = obj.transform.localToWorldMatrix;
+		Matrix4x4 worldFromObj = obj.transform.localToWorldMatrix;
+
+		if (!cameraRigInitialized)
+		{
+			cameraRig = OVRManager.instance.GetComponentInParent<OVRCameraRig>();
+			cameraRigInitialized = true;
+		}
+
+		Matrix4x4 trackingSpaceFromWorld = (cameraRig != null) ?
+			cameraRig.trackingSpace.worldToLocalMatrix :
+			Matrix4x4.identity;
 
 		// Use model matrix to switch from left-handed coordinate system (Unity)
 		// to right-handed (Open GL/Passthrough API): reverse z-axis
-		Matrix4x4 T_worldInsight_worldUnity = Matrix4x4.Scale(new Vector3(1, 1, -1));
-		return T_worldInsight_worldUnity * worldToTrackingSpace * T_worldUnity_model;
+		Matrix4x4 rightHandedFromLeftHanded = Matrix4x4.Scale(new Vector3(1, 1, -1));
+		return rightHandedFromLeftHanded * trackingSpaceFromWorld * worldFromObj;
 	}
 
 	private bool CreateAndAddMesh(
 		GameObject obj,
-		Matrix4x4 worldToTrackingSpace,
 		out ulong meshHandle,
 		out ulong instanceHandle)
 	{
@@ -374,8 +369,7 @@ public class OVRPassthroughLayer : MonoBehaviour
 		// TODO: evaluate using GetNativeVertexBufferPtr() instead to avoid copy
 		Vector3[] vertices = mesh.vertices;
 		int[] triangles = mesh.triangles;
-		Matrix4x4 T_worldInsight_model =
-				GetTransformMatrixForPassthroughSurfaceObject(obj, worldToTrackingSpace);
+		Matrix4x4 T_worldInsight_model = GetTransformMatrixForPassthroughSurfaceObject(obj);
 
 		if (!OVRPlugin.CreateInsightTriangleMesh(passthroughOverlay.layerId, vertices, triangles, out meshHandle))
 		{
@@ -394,10 +388,6 @@ public class OVRPassthroughLayer : MonoBehaviour
 
 	private void DestroySurfaceGeometries(bool addBackToDeferredQueue = false)
 	{
-		if (projectionSurfaceType != ProjectionSurfaceType.UserDefined)
-		{
-			return;
-		}
 		foreach (KeyValuePair<GameObject, PassthroughMeshInstance> el in surfaceGameObjects)
 		{
 			if (el.Value.meshHandle != 0)
@@ -414,8 +404,7 @@ public class OVRPassthroughLayer : MonoBehaviour
 						new DeferredPassthroughMeshAddition
 						{
 							gameObject = el.Key,
-							updateTransform = el.Value.updateTransform,
-							worldToTrackingSpace = el.Value.worldToTrackingSpace
+							updateTransform = el.Value.updateTransform
 						});
 				}
 			}
@@ -430,8 +419,7 @@ public class OVRPassthroughLayer : MonoBehaviour
 		{
 			if (el.Value.updateTransform && el.Value.instanceHandle != 0)
 			{
-				Matrix4x4 T_worldInsight_model = GetTransformMatrixForPassthroughSurfaceObject(
-					el.Key, el.Value.worldToTrackingSpace);
+				Matrix4x4 T_worldInsight_model = GetTransformMatrixForPassthroughSurfaceObject(el.Key);
 				if (!OVRPlugin.UpdateInsightPassthroughGeometryTransform(
 					el.Value.instanceHandle,
 					T_worldInsight_model))
@@ -548,7 +536,7 @@ public class OVRPassthroughLayer : MonoBehaviour
 		}
 	}
 
-	private void SyncMutableParametersToOverlay()
+	private void SyncToOverlay()
 	{
 		Debug.Assert(passthroughOverlay != null);
 
@@ -558,11 +546,30 @@ public class OVRPassthroughLayer : MonoBehaviour
 		passthroughOverlay.overridePerLayerColorScaleAndOffset = overridePerLayerColorScaleAndOffset;
 		passthroughOverlay.colorScale = colorScale;
 		passthroughOverlay.colorOffset = colorOffset;
+
+		if (passthroughOverlay.currentOverlayShape != overlayShape)
+		{
+			if (passthroughOverlay.layerId > 0)
+			{
+				Debug.LogWarning("Change to projectionSurfaceType won't take effect until the layer goes through a disable/enable cycle. ");
+			}
+
+			if (projectionSurfaceType == ProjectionSurfaceType.Reconstructed)
+			{
+				// Ensure there are no custom surface geometries when switching to reconstruction passthrough.
+				Debug.Log("Removing user defined surface geometries");
+				DestroySurfaceGeometries(false);
+			}
+
+			passthroughOverlay.currentOverlayShape = overlayShape;
+		}
 	}
 
 	#endregion
 
-	#region Internal Fields
+	#region Internal Fields/Properties
+	private OVRCameraRig cameraRig;
+	private bool cameraRigInitialized = false;
 	private GameObject auxGameObject;
 	private OVROverlay passthroughOverlay;
 
@@ -573,7 +580,6 @@ public class OVRPassthroughLayer : MonoBehaviour
 		public ulong meshHandle;
 		public ulong instanceHandle;
 		public bool updateTransform;
-		public Matrix4x4 worldToTrackingSpace;
 	}
 
 	// A structure for tracking a deferred addition of a game object to the projection surface
@@ -581,7 +587,6 @@ public class OVRPassthroughLayer : MonoBehaviour
 	{
 		public GameObject gameObject;
 		public bool updateTransform;
-		public Matrix4x4 worldToTrackingSpace;
 	}
 
 	// GameObjects which are in use as Insight Passthrough projection surface.
@@ -619,13 +624,24 @@ public class OVRPassthroughLayer : MonoBehaviour
 
 	// Keep a copy of a neutral gradient ready for comparison.
 	static readonly private Gradient colorMapNeutralGradient = CreateNeutralColorMapGradient();
-#endregion
 
-#region Unity Messages
+	// Overlay shape derived from `projectionSurfaceType`.
+	private OVROverlay.OverlayShape overlayShape
+	{
+		get
+		{
+			return projectionSurfaceType == ProjectionSurfaceType.UserDefined ?
+				OVROverlay.OverlayShape.SurfaceProjectedPassthrough :
+				OVROverlay.OverlayShape.ReconstructionPassthrough;
+		}
+	}
+	#endregion
+
+	#region Unity Messages
 
 	void Update()
 	{
-		SyncMutableParametersToOverlay();
+		SyncToOverlay();
 	}
 
 	void LateUpdate()
@@ -720,10 +736,8 @@ public class OVRPassthroughLayer : MonoBehaviour
 
 		// Add OVROverlay component for the passthrough proxy layer.
 		passthroughOverlay = auxGameObject.AddComponent<OVROverlay>();
-		passthroughOverlay.currentOverlayShape = projectionSurfaceType == ProjectionSurfaceType.UserDefined ?
-			OVROverlay.OverlayShape.SurfaceProjectedPassthrough :
-			OVROverlay.OverlayShape.ReconstructionPassthrough;
-		SyncMutableParametersToOverlay();
+		passthroughOverlay.currentOverlayShape = overlayShape;
+		SyncToOverlay();
 
 		// Surface geometries have been moved to the deferred additions queue in OnDisable() and will be re-added
 		// in LateUpdate().

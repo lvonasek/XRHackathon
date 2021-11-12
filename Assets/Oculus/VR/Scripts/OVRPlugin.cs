@@ -44,7 +44,7 @@ public static class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public static readonly System.Version wrapperVersion = _versionZero;
 #else
-	public static readonly System.Version wrapperVersion = OVRP_1_65_0.version;
+	public static readonly System.Version wrapperVersion = OVRP_1_66_0.version;
 #endif
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -160,6 +160,8 @@ public static class OVRPlugin
 	{
 		/// Success
 		Success = 0,
+		Success_EventUnavailable = 1,
+		Success_Pending = 2,
 
 		/// Failure
 		Failure = -1000,
@@ -928,6 +930,7 @@ public static class OVRPlugin
 		NoAllocation = (1 << 5),
 		ProtectedContent = (1 << 6),
 		AndroidSurfaceSwapChain = (1 << 7),
+		BicubicFiltering = (1 << 14),
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -3254,6 +3257,22 @@ public static class OVRPlugin
 #endif
 	}
 
+    public static Result GetInsightPassthroughInitializationState()
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+        return Result.Failure_Unsupported;
+#else
+        if (version >= OVRP_1_66_0.version)
+        {
+            return OVRP_1_66_0.ovrp_GetInsightPassthroughInitializationState();
+        }
+        else
+        {
+            return Result.Failure_Unsupported;
+        }
+#endif
+    }
+
 	public static bool CreateInsightTriangleMesh(int layerId, Vector3[] vertices, int[] triangles, out ulong meshHandle)
 	{
 		meshHandle = 0;
@@ -4489,6 +4508,8 @@ public static class OVRPlugin
 			StabilizedPoV = 3,
 			RemoteDroneControlled = 4,
 			RemoteSpatialMapped = 5,
+			SpectatorMode = 6,
+			MobileMRC = 7,
 			EnumSize = 0x7fffffff
 		}
 
@@ -5074,7 +5095,31 @@ public static class OVRPlugin
 			}
 #endif
 		}
-
+		
+		public static bool IsCastingToRemoteClient()
+		{
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return false;
+#else
+			if (version >= OVRP_1_66_0.version)
+			{
+				Bool isCasting = Bool.False;
+				Result result = OVRP_1_66_0.ovrp_Media_IsCastingToRemoteClient(out isCasting);
+				if (result == Result.Success)
+				{
+					return isCasting == Bool.True;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+#endif
+		}
 	}
 
 	public static bool SetDeveloperMode(Bool active)
@@ -6810,5 +6855,16 @@ public static class OVRPlugin
 		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result ovrp_KtxDestroy(IntPtr texture);
 
+	}
+
+	private static class OVRP_1_66_0
+	{
+		public static readonly System.Version version = new System.Version(1, 66, 0);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetInsightPassthroughInitializationState();
+        
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_Media_IsCastingToRemoteClient(out Bool isCasting);
 	}
 }

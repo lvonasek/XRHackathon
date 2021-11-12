@@ -88,6 +88,12 @@ partial class OculusBuildSamples
         Build("Passthrough");
     }
 
+    //Reach out to Irad Ratamasky(iradicator) or Rohit Rao (rohitrao) for issues related to enchanced compositor
+    static void BuildEnhancedOVROverlay() {
+        InitializeBuild("com.oculus.unitysample.enchancedovroverlay");
+        BuildInternal("EnhancedOVROverlay"); //Scene is presnet in OculusInternal folder.
+    }
+
     static void BuildStartScene() {
         InitializeBuild("com.oculus.unitysample.startscene");
         Build(
@@ -101,7 +107,7 @@ partial class OculusBuildSamples
                 "Assets/Oculus/SampleFramework/Usage/MixedRealityCapture.unity",
                 "Assets/Oculus/SampleFramework/Usage/OVROverlay.unity",
                 "Assets/Oculus/SampleFramework/Usage/OVROverlayCanvas.unity",
-                "Assets/Oculus/SampleFramework/Usage/Passthrough.unity"
+                "Assets/Oculus/SampleFramework/Usage/Passthrough.unity",
             });
     }
 
@@ -122,6 +128,10 @@ partial class OculusBuildSamples
 
     private static void Build(string sceneName) {
         Build(sceneName + ".apk", new string[] {"Assets/Oculus/SampleFramework/Usage/" + sceneName + ".unity"});
+    }
+
+    private static void BuildInternal(string sceneName) {
+        Build(sceneName + ".apk", new string[] {"Assets/Oculus/SampleFramework/Usage/OculusInternal/" + sceneName + ".unity"});
     }
 
     private static void Build(string apkName, string[] scenes) {
