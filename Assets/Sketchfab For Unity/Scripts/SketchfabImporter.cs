@@ -2,6 +2,7 @@
  * Copyright(c) 2017-2018 Sketchfab Inc.
  * License: https://github.com/sketchfab/UnityGLTF/blob/master/LICENSE
  */
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -20,6 +21,8 @@ namespace Sketchfab
 		string _currentSampleName = "Imported";
 		bool _addToCurrentScene = false;
 		string _gltfInput;
+        
+        public Action<GameObject> onFinished;
 
 		public void configure(string prefabName, bool addToScene = false)
 		{
@@ -115,6 +118,7 @@ namespace Sketchfab
 		private void OnFinishAsync(GameObject result, AnimationClip[] animations)
 		{
 			Debug.Log("Finished importing " + result.name);
+            onFinished?.Invoke(result);
 		}
 
 		private bool isSupportedFile(string filepath)

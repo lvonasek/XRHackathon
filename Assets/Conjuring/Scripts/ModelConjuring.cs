@@ -1,83 +1,38 @@
-﻿using SimpleJSON;
-using Sketchfab;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ModelConjuring : MonoBehaviour
 {
     [SerializeField]
-    private string username;
-    [SerializeField]
-    private string password;
-    [SerializeField]
-    private string requestedObject;
-    [SerializeField]
-    private bool doSearch;
-
-    private SketchfabLogger auth;
-
+    private SketchfabIntegration sketchfab;
+    
     void Start()
     {
-        auth = new SketchfabLogger();
-        auth.requestAccessToken(username, password);
+        //sketchfab.RequestObject("bart simpson");
+        sketchfab.onFinished += OnFinished;
     }
-
-    void Update()
+    
+    void OnFinished(GameObject model)
     {
-        SketchfabPlugin.getAPI().Update();
-
-        if (auth.isUserLogged() && doSearch)
+        Vector3 min = Vector3.one * int.MaxValue;
+        Vector3 max = Vector3.one * int.MinValue;
+        
+        foreach (MeshFilter meshFilter in model.GetComponentsInChildren<MeshFilter>())
         {
-			string searchQuery = SketchfabPlugin.Urls.searchEndpoint;
-            searchQuery = searchQuery + "downloadable=true&q=" + requestedObject;
-            searchQuery = searchQuery + "&max_face_count=" + 20000;
-
-            SketchfabRequest request = new SketchfabRequest(searchQuery, auth.getHeader());
-			request.setCallback(handleSearch);
-            SketchfabPlugin.getAPI().registerRequest(request);
-
-            doSearch = false;
-        }
-    }
-
-	void handleSearch(string response)
-	{
-        int length = int.MaxValue;
-        string uid = null;
-        JSONNode responseJson = Utils.JSONParse(response)["results"]["models"];
-        foreach (JSONNode model in responseJson.AsArray)
-        {
-            if (length > model["name"].ToString().Length)
+            foreach (Vector3 v in meshFilter.mesh.vertices)
             {
-                length = model["name"].ToString().Length;
-                uid = model["uid"];
+                if (min.x > v.x) min.x = v.x;
+                if (min.y > v.y) min.y = v.y;
+                if (min.z > v.z) min.z = v.z;
+                
+                if (max.x < v.x) max.x = v.x;
+                if (max.y < v.y) max.y = v.y;
+                if (max.z < v.z) max.z = v.z;
             }
         }
-
-        if (uid != null)
-        {
-            string url = SketchfabPlugin.Urls.modelEndPoint + "/" + uid + "/download";
-            SketchfabRequest request = new SketchfabRequest(url, auth.getHeader());
-            request.setCallback(handleDownloadAPIResponse);
-            SketchfabPlugin.getAPI().registerRequest(request);
-        }
-    }
-
-    void handleDownloadAPIResponse(string response)
-    {
-        JSONNode responseJson = Utils.JSONParse(response);
-        if (responseJson["gltf"] != null)
-        {
-            SketchfabRequest request = new SketchfabRequest(responseJson["gltf"]["url"]);
-            request.setCallback(handleArchive);
-            SketchfabPlugin.getAPI().registerRequest(request);
-        }
-    }
-
-    void handleArchive(byte[] data)
-    {
-        Debug.Log("Download finished");
-        SketchfabImporter importer = new SketchfabImporter();
-        importer.configure("", true);
-        importer.loadFromBuffer(data);
+        
+        float size = (max - min).magnitude;
+        model.transform.localScale = Vector3.one * 1.0f / size;
     }
 }

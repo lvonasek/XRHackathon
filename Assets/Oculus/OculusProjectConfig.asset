@@ -21,7 +21,7 @@ MonoBehaviour:
   securityXmlPath: 
   skipUnneededShaders: 0
   focusAware: 1
-  requiresSystemKeyboard: 0
+  requiresSystemKeyboard: 1
   experimentalFeaturesEnabled: 1
   insightPassthroughEnabled: 1
   systemSplashScreen: {fileID: 0}
