@@ -593,7 +593,7 @@ namespace Sketchfab
 		// Model archive download and import
 		public void importArchive(byte[] data, string unzipDirectory, string importDirectory, string prefabName, bool addToCurrentScene = false)
 		{
-			_importer.configure(importDirectory, prefabName, addToCurrentScene);
+			_importer.configure(prefabName, addToCurrentScene);
 			_importer.loadFromBuffer(data);
 		}
 	}

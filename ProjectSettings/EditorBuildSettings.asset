@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Graffiti/Scenes/Main.unity
-    guid: 930373036bc6c4673a9a9e77160c704b
+    path: Assets/Conjuring/Scene/Main.unity
+    guid: b32b11c46033c4cef9c6cb0435099b3a
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: c9de833dfe0df4e4b8f36e9aef3218c4,
       type: 2}

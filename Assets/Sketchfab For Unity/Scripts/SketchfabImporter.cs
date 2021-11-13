@@ -21,7 +21,7 @@ namespace Sketchfab
 		bool _addToCurrentScene = false;
 		string _gltfInput;
 
-		public void configure(string importDirectory, string prefabName, bool addToScene = false)
+		public void configure(string prefabName, bool addToScene = false)
 		{
 			if (prefabName.Length > 0)
 				_currentSampleName = prefabName;
@@ -109,7 +109,12 @@ namespace Sketchfab
 			}
 			string zip = unzipGltfArchive(temp);
 			string gltf = findGltfFile(_unzipDirectory);
-			Importer.LoadFromFile(gltf);
+			Importer.ImportGLTFAsync(gltf, new ImportSettings(), OnFinishAsync);
+		}
+
+		private void OnFinishAsync(GameObject result, AnimationClip[] animations)
+		{
+			Debug.Log("Finished importing " + result.name);
 		}
 
 		private bool isSupportedFile(string filepath)
