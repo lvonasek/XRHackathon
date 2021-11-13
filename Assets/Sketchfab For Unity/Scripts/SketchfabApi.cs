@@ -3,7 +3,6 @@
  * License: https://github.com/sketchfab/UnityGLTF/blob/master/LICENSE
  */
 
-#if UNITY_EDITOR
 using UnityEngine;
 using System.Collections.Generic;
 using SimpleJSON;
@@ -334,4 +333,3 @@ namespace Sketchfab
 		}
 	}
 }
-#endif

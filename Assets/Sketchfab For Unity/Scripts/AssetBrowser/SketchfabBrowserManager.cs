@@ -3,7 +3,6 @@
  * License: https://github.com/sketchfab/UnityGLTF/blob/master/LICENSE
  */
 
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -154,17 +153,10 @@ namespace Sketchfab
 		float _previewRatio = 0.5625f;
 		bool _hasFetchedPreviews = false;
 
-		// Callbacks
-		UpdateCallback _refreshCallback;
-		RefreshCallback _downloadFinished;
-		UnityGLTF.GLTFEditorImporter.ProgressCallback _importProgress;
-		UnityGLTF.GLTFEditorImporter.RefreshWindow _importFinish;
-
-		public SketchfabBrowserManager(UpdateCallback refresh = null, bool initialSearch = true)
+		public SketchfabBrowserManager(bool initialSearch = true)
 		{
 			_defaultThumbnail = Resources.Load<Texture2D>("defaultModel");
 			checkValidity();
-			_refreshCallback = refresh;
 
 			if (initialSearch)
 			{
@@ -187,29 +179,6 @@ namespace Sketchfab
 		{
 			checkValidity();
 			SketchfabPlugin.Update();
-			_importer.Update();
-		}
-
-		// Callbacks
-		public void setRefreshCallback(UpdateCallback callback)
-		{
-			_refreshCallback = callback;
-		}
-
-		public void setImportProgressCallback(UnityGLTF.GLTFEditorImporter.ProgressCallback callback)
-		{
-			_importProgress = callback;
-		}
-
-		public void setImportFinishCallback(UnityGLTF.GLTFEditorImporter.RefreshWindow callback)
-		{
-			_importFinish = callback;
-		}
-
-		public void Refresh()
-		{
-			if (_refreshCallback != null)
-				_refreshCallback();
 		}
 
 		// Manager integrity and reset
@@ -233,7 +202,7 @@ namespace Sketchfab
 
 			if (_importer == null)
 			{
-				_importer = new SketchfabImporter(ImportProgress, ImportFinish);
+				_importer = new SketchfabImporter();
 			}
 		}
 
@@ -260,7 +229,6 @@ namespace Sketchfab
 			{
 				_categories.Add(node["name"], node["slug"]);
 			}
-			_refreshCallback();
 		}
 
 		public List<string> getCategories()
@@ -416,7 +384,6 @@ namespace Sketchfab
 				}
 			}
 			_isFetching = false;
-			Refresh();
 		}
 
 		public bool hasNextResults()
@@ -582,7 +549,6 @@ namespace Sketchfab
 			}
 
 			GL.sRGBWrite = sRGBBackup;
-			Refresh();
 		}
 
 		string extractUidFromUrl(string url)
@@ -627,36 +593,8 @@ namespace Sketchfab
 		// Model archive download and import
 		public void importArchive(byte[] data, string unzipDirectory, string importDirectory, string prefabName, bool addToCurrentScene = false)
 		{
-			if (!GLTFUtils.isFolderInProjectDirectory(importDirectory))
-			{
-				EditorUtility.DisplayDialog("Error", "Please select a path within your Asset directory", "OK");
-				return;
-			}
-
 			_importer.configure(importDirectory, prefabName, addToCurrentScene);
 			_importer.loadFromBuffer(data);
 		}
-
-		void ImportProgress(UnityGLTF.GLTFEditorImporter.IMPORT_STEP step, int current, int total)
-		{
-			if (_importProgress != null)
-				_importProgress(step, current, total);
-		}
-
-		public void FinishUpdate()
-		{
-			EditorUtility.ClearProgressBar();
-			if (_importFinish != null)
-				_importFinish();
-		}
-
-		void ImportFinish()
-		{
-			if (_importFinish != null)
-				_importFinish();
-			_importer.cleanArtifacts();
-		}
 	}
 }
-
-#endif

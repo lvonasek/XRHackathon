@@ -41,7 +41,7 @@ namespace Sketchfab
 			if(_currentModel == null || model.uid != _currentModel.uid)
 			{
 				_currentModel = model;
-				_prefabName = GLTFUtils.cleanName(_currentModel.name).Replace(" ", "_");
+				_prefabName = _currentModel.name.Replace(" ", "_");
 				_importDirectory = Application.dataPath + "/Import/" + _prefabName.Replace(" ", "_");
 			}
 			else
@@ -191,14 +191,7 @@ namespace Sketchfab
 		void onChangImportDirectoryClick()
 		{
 			string newImportDir = EditorUtility.OpenFolderPanel("Choose import directory", Application.dataPath, "");
-			if (GLTFUtils.isFolderInProjectDirectory(newImportDir))
-			{
-				_importDirectory = newImportDir;
-			}
-			else if (newImportDir != "")
-			{
-				EditorUtility.DisplayDialog("Error", "Please select a path within your current Unity project (with Assets/)", "Ok");
-			}
+			_importDirectory = newImportDir;
 		}
 
 		void onImportModelClick()
@@ -272,7 +265,7 @@ namespace Sketchfab
 				// Import directory in project
 				GUILayout.BeginHorizontal();
 				{
-					_ui.displayModelStats("Import into      ", GLTFUtils.getPathProjectFromAbsolute(_importDirectory));
+					_ui.displayModelStats("Import into      ", _importDirectory);
 					GUILayout.FlexibleSpace();
 					if (GUILayout.Button("Change", GUILayout.Width(80), GUILayout.Height(18)))
 					{
@@ -326,35 +319,9 @@ namespace Sketchfab
 
 		private void OnArchiveUpdate()
 		{
-			EditorUtility.ClearProgressBar();
+			Debug.Log("Download finished");
 			string _unzipDirectory = Application.temporaryCachePath + "/unzip";
-			_window._browserManager.setImportProgressCallback(UpdateProgress);
-			_window._browserManager.setImportFinishCallback(OnFinishImport);
 			_window._browserManager.importArchive(_lastArchive, _unzipDirectory, _importDirectory, _prefabName, _addToCurrentScene);
-		}
-
-		private void handleDownloadCallback(float current)
-		{
-			if(EditorUtility.DisplayCancelableProgressBar("Download", "Downloading model archive ", (float)current))
-			{
-				if(_modelRequest != null)
-				{
-					_window._browserManager._api.dropRequest(ref _modelRequest);
-					_modelRequest = null;
-				}
-				clearProgress();
-			}
-		}
-
-		private void clearProgress()
-		{
-			EditorUtility.ClearProgressBar();
-		}
-
-		private void OnFinishImport()
-		{
-			EditorUtility.ClearProgressBar();
-			EditorUtility.DisplayDialog("Import successful", "Model \n" + _currentModel.name + " by " + _currentModel.author + " has been successfully imported", "OK");
 		}
 
 		public void fetchGLTFModel(string uid, RefreshCallback fetchedCallback, Dictionary<string, string> headers)
@@ -391,45 +358,10 @@ namespace Sketchfab
 
 		void requestArchive(string modelUrl)
 		{
+			Debug.Log("Downloading " + modelUrl);
 			SketchfabRequest request = new SketchfabRequest(_currentModel.tempDownloadUrl);
 			request.setCallback(handleArchive);
-			request.setProgressCallback(handleDownloadCallback);
 			SketchfabPlugin.getAPI().registerRequest(request);
-		}
-
-		public void UpdateProgress(UnityGLTF.GLTFEditorImporter.IMPORT_STEP step, int current, int total)
-		{
-			string element = "";
-			switch (step)
-			{
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.BUFFER:
-					element = "Buffer";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.IMAGE:
-					element = "Image";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.TEXTURE:
-					element = "Texture";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.MATERIAL:
-					element = "Material";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.MESH:
-					element = "Mesh";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.NODE:
-					element = "Node";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.ANIMATION:
-					element = "Animation";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.SKIN:
-					element = "Skin";
-					break;
-			}
-
-			EditorUtility.DisplayProgressBar("Importing glTF", "Importing " + element + " (" + current + " / " + total + ")", (float)current / (float)total);
-			this.Repaint();
 		}
 
 		private void OnDestroy()

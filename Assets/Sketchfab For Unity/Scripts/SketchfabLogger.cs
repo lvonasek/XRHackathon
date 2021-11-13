@@ -1,9 +1,12 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEditor;
 using SimpleJSON;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 
 namespace Sketchfab
 {
@@ -103,7 +106,11 @@ namespace Sketchfab
 			checkAccessTokenValidity();
 			if (username == null)
 			{
+#if UNITY_EDITOR
 				username = EditorPrefs.GetString("skfb_username", "");
+#else
+				username = PlayerPrefs.GetString("skfb_username", "");
+#endif
 			}
 		}
 
@@ -149,7 +156,11 @@ namespace Sketchfab
 				}
 				else
 				{
+#if UNITY_EDITOR
 					GUILayout.Label("Retrieving user data", EditorStyles.centeredGreyMiniLabel);
+#else
+					GUILayout.Label("Retrieving user data");
+#endif
 				}
 			}
 			else if (_current.isDisplayable())
@@ -184,7 +195,11 @@ namespace Sketchfab
 
 		public void logout()
 		{
+#if UNITY_EDITOR
 			EditorPrefs.DeleteKey(accessTokenKey);
+#else
+			PlayerPrefs.DeleteKey(accessTokenKey);
+#endif
 			_current = null;
 			_isUserLogged = false;
 			_hasCheckedSession = true;
@@ -212,7 +227,11 @@ namespace Sketchfab
 		private void handleGetToken(string response)
 		{
 			string access_token = parseAccessToken(response);
+#if UNITY_EDITOR
 			EditorPrefs.SetString("skfb_username", username);
+#else
+			PlayerPrefs.SetString("skfb_username", username);
+#endif
 			if (access_token != null)
 				registerAccessToken(access_token);
 
@@ -236,12 +255,20 @@ namespace Sketchfab
 
 		private void registerAccessToken(string access_token)
 		{
+#if UNITY_EDITOR
 			EditorPrefs.SetString(accessTokenKey, access_token);
+#else
+			PlayerPrefs.SetString(accessTokenKey, access_token);
+#endif
 		}
 
 		public void requestAvatar(string url)
 		{
+#if UNITY_EDITOR
 			string access_token = EditorPrefs.GetString(accessTokenKey);
+#else
+			string access_token = PlayerPrefs.GetString(accessTokenKey);
+#endif
 			if (access_token == null || access_token.Length < 30)
 			{
 				Debug.Log("Access token is invalid or inexistant");
@@ -258,7 +285,11 @@ namespace Sketchfab
 		public Dictionary<string, string> getHeader()
 		{
 			Dictionary<string, string> headers = new Dictionary<string, string>();
+#if UNITY_EDITOR
 			headers.Add("Authorization", "Bearer " + EditorPrefs.GetString(accessTokenKey));
+#else
+			headers.Add("Authorization", "Bearer " + PlayerPrefs.GetString(accessTokenKey));
+#endif
 			return headers;
 		}
 
@@ -310,7 +341,11 @@ namespace Sketchfab
 		public void requestUserData()
 		{
 			Dictionary<string, string> headers = new Dictionary<string, string>();
+#if UNITY_EDITOR
 			headers.Add("Authorization", "Bearer " + EditorPrefs.GetString(accessTokenKey));
+#else
+			headers.Add("Authorization", "Bearer " + PlayerPrefs.GetString(accessTokenKey));
+#endif
 			SketchfabRequest request = new SketchfabRequest(SketchfabPlugin.Urls.userMe, headers);
 			request.setCallback(handleUserData);
 			request.setFailedCallback(logout);
@@ -320,13 +355,21 @@ namespace Sketchfab
 		private void onLoginFailed(string res)
 		{
 			JSONNode response = Utils.JSONParse(res);
+#if UNITY_EDITOR
 			EditorUtility.DisplayDialog("Login error", "Authentication failed: " + response["error_description"], "OK");
+#else
+			Debug.LogError("Login error. " + "Authentication failed: " + response["error_description"]);
+#endif
 			logout();
 		}
 
 		public void checkAccessTokenValidity()
 		{
+#if UNITY_EDITOR
 			string access_token = EditorPrefs.GetString(accessTokenKey);
+#else
+			string access_token = PlayerPrefs.GetString(accessTokenKey);
+#endif
 			if (access_token == null || access_token.Length < 30)
 			{
 				_hasCheckedSession = true;
@@ -374,4 +417,3 @@ namespace Sketchfab
 		}
 	}
 }
-#endif

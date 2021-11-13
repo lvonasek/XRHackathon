@@ -74,7 +74,7 @@ namespace Sketchfab
 		{
 			if (_browserManager == null)
 			{
-				_browserManager = new SketchfabBrowserManager(OnRefreshUpdate, true);
+				_browserManager = new SketchfabBrowserManager(true);
 				resetFilters();
 				_currentUid = "";
 				_categoryName = "";
@@ -648,54 +648,6 @@ namespace Sketchfab
 		{
 			if (_skfbWin != null)
 				_skfbWin.Close();
-		}
-
-		// Callbacks
-		private void OnRefreshUpdate()
-		{
-			this.Repaint();
-		}
-
-		private void OnFinishImport()
-		{
-			SketchfabModel model = _browserManager.getModel(_currentUid);
-			EditorUtility.ClearProgressBar();
-			EditorUtility.DisplayDialog("Import successful", "Model \n" + model.name + " by " + model.author + " has been successfully imported", "OK");
-		}
-
-		public void UpdateProgress(UnityGLTF.GLTFEditorImporter.IMPORT_STEP step, int current, int total)
-		{
-			string element = "";
-			switch (step)
-			{
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.BUFFER:
-					element = "Buffer";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.IMAGE:
-					element = "Image";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.TEXTURE:
-					element = "Texture";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.MATERIAL:
-					element = "Material";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.MESH:
-					element = "Mesh";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.NODE:
-					element = "Node";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.ANIMATION:
-					element = "Animation";
-					break;
-				case UnityGLTF.GLTFEditorImporter.IMPORT_STEP.SKIN:
-					element = "Skin";
-					break;
-			}
-
-			EditorUtility.DisplayProgressBar("Importing glTF", "Importing " + element + " (" + current + " / " + total + ")", (float)current / (float)total);
-			this.Repaint();
 		}
 
 		private void OnDestroy()

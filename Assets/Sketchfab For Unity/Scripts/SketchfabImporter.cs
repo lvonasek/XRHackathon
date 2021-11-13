@@ -2,13 +2,11 @@
  * Copyright(c) 2017-2018 Sketchfab Inc.
  * License: https://github.com/sketchfab/UnityGLTF/blob/master/LICENSE
  */
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using UnityGLTF;
 using Ionic.Zip;
-using UnityEditor;
+using Siccity.GLTFUtility;
 
 /// <summary>
 /// Class to handle imports from Sketchfab
@@ -17,42 +15,14 @@ namespace Sketchfab
 {
 	class SketchfabImporter
 	{
-		GLTFEditorImporter _importer;
-		private List<string> _unzippedFiles;
-
 		// Settings
 		string _unzipDirectory = Application.temporaryCachePath + "/unzip";
-		string _importDirectory = Application.dataPath + "/Import";
 		string _currentSampleName = "Imported";
 		bool _addToCurrentScene = false;
 		string _gltfInput;
 
-		public SketchfabImporter(GLTFEditorImporter.ProgressCallback progressCallback, GLTFEditorImporter.RefreshWindow finishCallback)
-		{
-			_importer = new GLTFEditorImporter(progressCallback, finishCallback);
-			_unzippedFiles = new List<string>();
-		}
-
-		public void Update()
-		{
-			_importer.Update();
-		}
-
 		public void configure(string importDirectory, string prefabName, bool addToScene = false)
 		{
-
-			if (importDirectory.Length > 0)
-			{
-				if (!GLTFUtils.isFolderInProjectDirectory(importDirectory))
-				{
-					Debug.LogError("Import directory in not in Assets");
-				}
-				else
-				{
-					_importDirectory = importDirectory;
-				}
-			}
-
 			if (prefabName.Length > 0)
 				_currentSampleName = prefabName;
 
@@ -65,7 +35,6 @@ namespace Sketchfab
 			DirectoryInfo info = new DirectoryInfo(directory);
 			foreach (FileInfo fileInfo in info.GetFiles())
 			{
-				_unzippedFiles.Add(fileInfo.FullName);
 				if (isSupportedFile(fileInfo.FullName))
 				{
 					gltfFile = fileInfo.FullName;
@@ -92,34 +61,14 @@ namespace Sketchfab
 				deleteExistingGLTF();
 
 			// Extract archive
+			Debug.Log("Unzipping " + zipPath);
 			ZipFile zipfile = ZipFile.Read(zipPath);
 
 			foreach (ZipEntry e in zipfile)
 			{
-				// check if you want to extract e or not
-				_unzippedFiles.Add(_unzipDirectory + "/" + e.FileName);
 				e.Extract(_unzipDirectory, ExtractExistingFileAction.OverwriteSilently);
 			}
 
-
-			return findGltfFile(_unzipDirectory);
-		}
-
-		private string unzipGLTFArchiveData(byte[] zipData)
-		{
-			if (!Directory.Exists(_unzipDirectory))
-				Directory.CreateDirectory(_unzipDirectory);
-			else
-				deleteExistingGLTF();
-
-			MemoryStream stream = new MemoryStream(zipData);
-			ZipFile zipfile = ZipFile.Read(stream);
-			foreach (ZipEntry e in zipfile)
-			{
-				// check if you want to extract e or not
-				_unzippedFiles.Add(_unzipDirectory + "/" + e.FileName);
-				e.Extract(_unzipDirectory, ExtractExistingFileAction.OverwriteSilently);
-			}
 
 			return findGltfFile(_unzipDirectory);
 		}
@@ -129,22 +78,38 @@ namespace Sketchfab
 			return directory.Replace(Application.dataPath, "Assets");
 		}
 
+		private void DeleteDirectory(string path)
+        {
+			foreach (string dir in Directory.GetDirectories(path))
+			{
+				DeleteDirectory(dir);
+			}
+			foreach (string file in Directory.GetFiles(path))
+			{
+				File.Delete(file);
+            }
+			Directory.Delete(path);
+        }
+
 		public void loadFromBuffer(byte[] data)
 		{
-			if (!GLTFUtils.isFolderInProjectDirectory(_importDirectory))
-			{
-				Debug.LogError("Import directory is outside of project directory. Please select path in Assets/");
-				return;
+			if (Directory.Exists(_unzipDirectory))
+            {
+				DeleteDirectory(_unzipDirectory);
 			}
-
-			if (!Directory.Exists(_importDirectory))
+			Directory.CreateDirectory(_unzipDirectory);
+			string temp = _unzipDirectory + "/temp.zip";
+			using (MemoryStream stream = new MemoryStream(data))
 			{
-				Directory.CreateDirectory(_importDirectory);
+				using (FileStream fs = new FileStream(temp, FileMode.CreateNew))
+				{
+					stream.CopyTo(fs);
+					fs.Flush();
+				}
 			}
-
-			_gltfInput = unzipGLTFArchiveData(data);
-			_importer.setupForPath(_gltfInput, _importDirectory, _currentSampleName, _addToCurrentScene);
-			_importer.Load();
+			string zip = unzipGltfArchive(temp);
+			string gltf = findGltfFile(_unzipDirectory);
+			Importer.LoadFromFile(gltf);
 		}
 
 		private bool isSupportedFile(string filepath)
@@ -152,40 +117,5 @@ namespace Sketchfab
 			string ext = Path.GetExtension(filepath);
 			return (ext == ".gltf" || ext == ".glb");			
 		}
-
-		public void loadFromFile(string filepath)
-		{
-			_gltfInput = filepath;
-			if (Path.GetExtension(filepath) == ".zip")
-			{
-				_gltfInput = unzipGltfArchive(filepath);
-			}
-
-			if(!isSupportedFile(_gltfInput))
-			{
-				EditorUtility.DisplayDialog("Import Failed", "No glTF data found", "OK");
-				return;
-			}
-
-			if (!Directory.Exists(_importDirectory))
-			{
-				Directory.CreateDirectory(_importDirectory);
-			}
-
-			_importer.setupForPath(_gltfInput, _importDirectory, _currentSampleName, _addToCurrentScene);
-			_importer.Load();
-		}
-
-		public void cleanArtifacts()
-		{
-			GLTFUtils.removeFileList(_unzippedFiles.ToArray());
-		}
-
-		public void OnDestroy()
-		{
-			GLTFUtils.removeFileList(_unzippedFiles.ToArray());
-			GLTFUtils.removeEmptyDirectory(_unzipDirectory);
-		}
 	}
 }
-#endif

@@ -1,9 +1,10 @@
-﻿#if UNITY_EDITOR
-#pragma warning disable 0168 // variable declared but not used.
+﻿#pragma warning disable 0168 // variable declared but not used.
 #pragma warning disable 0219 // variable assigned but not used.
 #pragma warning disable 0414 // private field assigned but not used.
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace Sketchfab
 {
@@ -96,7 +97,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabModelName == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabModelName = new GUIStyle(EditorStyles.miniLabel);
+#else
+				_sketchfabModelName = new GUIStyle();
+#endif
 				_sketchfabModelName.font = TitiliumBold;
 				_sketchfabModelName.fontSize = 20;
 			}
@@ -134,7 +139,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabMiniModelname == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabMiniModelname = new GUIStyle(EditorStyles.miniLabel);
+#else
+				_sketchfabMiniModelname = new GUIStyle();
+#endif
 				_sketchfabMiniModelname.font = OSSemiBold;
 				_sketchfabMiniModelname.fontSize = 10;
 				_sketchfabMiniModelname.wordWrap = true;
@@ -151,7 +160,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabMiniAuthorname == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabMiniAuthorname = new GUIStyle(EditorStyles.miniLabel);
+#else
+				_sketchfabMiniAuthorname = new GUIStyle();
+#endif
 				_sketchfabMiniAuthorname.font = OSRegular;
 				_sketchfabMiniAuthorname.fontSize = 8;
 				_sketchfabMiniAuthorname.wordWrap = true;
@@ -168,7 +181,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabContentLabel == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabContentLabel = new GUIStyle(EditorStyles.wordWrappedMiniLabel);
+#else
+				_sketchfabContentLabel = new GUIStyle();
+#endif
 				_sketchfabContentLabel.font = OSRegular;
 				_sketchfabContentLabel.fontSize = 14;
 				_sketchfabContentLabel.richText = true;
@@ -209,7 +226,11 @@ namespace Sketchfab
 		{
 			if(_keyStyle == null)
 			{
+#if UNITY_EDITOR
 				_keyStyle = new GUIStyle(EditorStyles.label);
+#else
+				_keyStyle = new GUIStyle();
+#endif
 				_keyStyle.alignment = TextAnchor.MiddleLeft;
 				_keyStyle.font = OSRegular;
 				_keyStyle.fontSize = 12;
@@ -222,7 +243,11 @@ namespace Sketchfab
 		{
 			if(_valueStyle == null)
 			{
+#if UNITY_EDITOR
 				_valueStyle = new GUIStyle(EditorStyles.label);
+#else
+				_valueStyle = new GUIStyle();
+#endif
 				_valueStyle.alignment = TextAnchor.MiddleRight;
 				_valueStyle.font = OSBold;
 				_valueStyle.fontSize = 12;
@@ -235,7 +260,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabTitleLabel == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabTitleLabel = new GUIStyle(EditorStyles.wordWrappedMiniLabel);
+#else
+				_sketchfabTitleLabel = new GUIStyle();
+#endif
 				_sketchfabTitleLabel.font = TitiliumRegular;
 			}
 
@@ -246,7 +275,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabClickableLabel == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabClickableLabel = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
+#else
+				_sketchfabClickableLabel = new GUIStyle();
+#endif
 				_sketchfabClickableLabel.richText = true;
 			}
 
@@ -257,7 +290,11 @@ namespace Sketchfab
 		{
 			if(_sketchfabLabel == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabLabel = new GUIStyle(EditorStyles.miniLabel);
+#else
+				_sketchfabLabel = new GUIStyle();
+#endif
 				_sketchfabLabel.richText = true;
 			}
 
@@ -268,7 +305,11 @@ namespace Sketchfab
 		{
 			if (_sketchfabBigLabel == null)
 			{
+#if UNITY_EDITOR
 				_sketchfabBigLabel = new GUIStyle(EditorStyles.miniLabel);
+#else
+				_sketchfabBigLabel = new GUIStyle();
+#endif
 				_sketchfabBigLabel.richText = true;
 				_sketchfabBigLabel.fontSize = 14;
 				_sketchfabBigLabel.alignment = TextAnchor.MiddleCenter;
@@ -318,4 +359,3 @@ namespace Sketchfab
 		}
 }
 }
-#endif
