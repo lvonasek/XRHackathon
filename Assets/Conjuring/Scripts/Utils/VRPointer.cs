@@ -16,6 +16,11 @@ public class VRPointer : MonoBehaviour
 
     void Update()
     {
+        if (Application.isEditor)
+        {
+            return;
+        }
+        
         // Get raycaster
         if (raycaster == null)
         {

@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class SketchfabIntegration : MonoBehaviour
 {
+    private string KEY_USERNAME = "KEY_USERNAME";
+    
     [SerializeField]
     private int maxFaces = 50000;
 
@@ -18,9 +20,22 @@ public class SketchfabIntegration : MonoBehaviour
     
     public Action<GameObject> onFinished;
     
+    public SketchfabLogger GetAuth()
+    {
+        return auth;
+    }
+    
+    public string GetUsername()
+    {
+        return PlayerPrefs.GetString(KEY_USERNAME, "");
+    }
+    
     public void Login(string username, string password)
     {
         auth.requestAccessToken(username, password);
+        
+        PlayerPrefs.SetString(KEY_USERNAME, username);
+        PlayerPrefs.Save();
     }
     
     public void RequestObject(string name)
