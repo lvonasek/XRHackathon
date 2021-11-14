@@ -8,6 +8,10 @@ public class ModelConjuring : MonoBehaviour
     private float objectScale = 0.05f;
 
     [SerializeField]
+    private GameObject leftHandMagicBall;
+    [SerializeField]
+    private GameObject rightHandMagicBall;
+    [SerializeField]
     private SketchfabIntegration sketchfab;
     [SerializeField]
     private OVRCameraRig tracking;
@@ -25,6 +29,20 @@ public class ModelConjuring : MonoBehaviour
         
         toAnchor = tracking.rightHandAnchor;
         sketchfab.RequestObject("bart simpson");
+    }
+    
+    void Update()
+    {
+        UpdateHand(tracking.leftHandAnchor, leftHandMagicBall);
+        UpdateHand(tracking.rightHandAnchor, rightHandMagicBall);
+    }
+    
+    void UpdateHand(Transform hand, GameObject magicBall)
+    {
+        float distanceToHand = (hand.position - tracking.centerEyeAnchor.position).magnitude;
+        float targetBallScale = distanceToHand < 0.35f ? 0.1f : 0;
+        magicBall.transform.position = hand.position + Vector3.up * 0.1f;
+        magicBall.transform.localScale = Vector3.Lerp(magicBall.transform.localScale, targetBallScale * Vector3.one, 0.1f);
     }
     
     void OnModelCreated(GameObject model)
