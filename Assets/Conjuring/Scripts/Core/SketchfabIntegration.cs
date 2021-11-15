@@ -9,7 +9,7 @@ public class SketchfabIntegration : MonoBehaviour
     private string KEY_USERNAME = "KEY_USERNAME";
     
     [SerializeField]
-    private int maxFaces = 50000;
+    private int maxFaces = 25000;
 
     private SketchfabLogger auth;
     private SketchfabAPI api;
@@ -51,6 +51,7 @@ public class SketchfabIntegration : MonoBehaviour
         requestedObjects = new List<string>();
         
         active = true;
+        importer.onFinished += OnFinished;
     }
 
     void Update()
@@ -122,7 +123,6 @@ public class SketchfabIntegration : MonoBehaviour
     {
         importer.configure("", true);
         importer.loadFromBuffer(data);
-        importer.onFinished += OnFinished;
     }
     
     void OnFinished(GameObject model)
