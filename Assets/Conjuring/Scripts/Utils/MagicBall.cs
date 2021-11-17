@@ -19,6 +19,8 @@ public class MagicBall : MonoBehaviour
 
     [SerializeField]
     private TextMesh handText;
+    [SerializeField]
+    private OVRSkeleton skeleton;
 
     private List<GameObject> handObjects;
     private List<GameObject> toDestroy;
@@ -55,8 +57,43 @@ public class MagicBall : MonoBehaviour
         this.status = status;
     }
 
+    private bool IsHandModeOn()
+    {
+        return skeleton.IsDataValid || (transform.position.magnitude < 0.01f);
+    }
+
     private void UpdateMagicBall()
     {
+        // update position and rotation
+        if (IsHandModeOn())
+        {
+            Vector3 position = Vector3.zero;
+            foreach (OVRBone bone in skeleton.Bones)
+            {
+                position += bone.Transform.position;
+            }
+            position /= (float)skeleton.Bones.Count;
+            transform.position = position + Vector3.up * 0.1f;
+            transform.rotation = Quaternion.identity;
+
+            foreach (GameObject go in handObjects)
+            {
+                go.transform.position = position;
+                go.transform.rotation = Quaternion.identity;
+            }
+        } else
+        {
+            transform.localPosition = Vector3.up * 0.1f;
+            transform.localRotation = Quaternion.identity;
+
+            foreach (GameObject go in handObjects)
+            {
+                go.transform.localPosition = Vector3.zero;
+                go.transform.localRotation = Quaternion.identity;
+            }
+        }
+
+        // update scale and attached text
         switch (status)
         {
             case Status.DONE:

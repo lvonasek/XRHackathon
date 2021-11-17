@@ -14,6 +14,7 @@ public class ModelConjuring : MonoBehaviour
     private MagicBall leftHandMagicBall;
     [SerializeField]
     private MagicBall rightHandMagicBall;
+
     [SerializeField]
     private SketchfabIntegration sketchfab;
     [SerializeField]
@@ -44,13 +45,13 @@ public class ModelConjuring : MonoBehaviour
 
     void Update()
     {
-        UpdateHand(tracking.leftHandAnchor, leftHandMagicBall);
-        UpdateHand(tracking.rightHandAnchor, rightHandMagicBall);
+        UpdateHand(leftHandMagicBall);
+        UpdateHand(rightHandMagicBall);
     }
 
-    void UpdateHand(Transform hand, MagicBall magicBall)
+    void UpdateHand(MagicBall magicBall)
     {
-        float distanceToHand = (hand.position - tracking.centerEyeAnchor.position).magnitude;
+        float distanceToHand = (magicBall.transform.position - tracking.centerEyeAnchor.position).magnitude;
         bool shouldActive = distanceToHand < 0.35f;
 
         if (shouldActive && (leftHandMagicBall.GetStatus() == MagicBall.Status.IDLE) && (rightHandMagicBall.GetStatus() == MagicBall.Status.IDLE))

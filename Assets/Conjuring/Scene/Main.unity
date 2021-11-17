@@ -738,6 +738,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &257586116 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114567484643301796, guid: 835e735ca71bf78459fb2cababd74112,
+    type: 3}
+  m_PrefabInstance: {fileID: 1392650078}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2609c54f376cffc4da1ab9401cc1a36f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &329553848
 GameObject:
   m_ObjectHideFlags: 0
@@ -3596,6 +3608,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: MagicBall
       objectReference: {fileID: 0}
+    - target: {fileID: 7686471041356350050, guid: 74a81841e0332fd2a9a1d39288b9b006,
+        type: 3}
+      propertyPath: skeleton
+      value: 
+      objectReference: {fileID: 971583321}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 74a81841e0332fd2a9a1d39288b9b006, type: 3}
 --- !u!114 &2090181322 stripped
@@ -3922,6 +3939,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: MagicBall
       objectReference: {fileID: 0}
+    - target: {fileID: 7686471041356350050, guid: 74a81841e0332fd2a9a1d39288b9b006,
+        type: 3}
+      propertyPath: skeleton
+      value: 
+      objectReference: {fileID: 257586116}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 74a81841e0332fd2a9a1d39288b9b006, type: 3}
 --- !u!114 &967331443204807999 stripped
