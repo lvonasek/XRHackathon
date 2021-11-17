@@ -16,9 +16,11 @@ public class SketchfabIntegration : MonoBehaviour
     private SketchfabImporter importer;
 
     private List<string> requestedObjects;
+    private string modelName;
     private bool active;
     
-    public Action<GameObject> onFinished;
+    public Action onFailed;
+    public Action<GameObject, string> onFinished;
     
     public SketchfabLogger GetAuth()
     {
@@ -92,6 +94,7 @@ public class SketchfabIntegration : MonoBehaviour
         if (uid != null)
         {
             Debug.Log("Downloading " + name);
+            modelName = name;
             
             string url = SketchfabPlugin.Urls.modelEndPoint + "/" + uid + "/download";
             SketchfabRequest request = new SketchfabRequest(url, auth.getHeader());
@@ -100,6 +103,7 @@ public class SketchfabIntegration : MonoBehaviour
         }
         else
         {
+            onFailed?.Invoke();
             active = true;
         }
     }
@@ -115,6 +119,7 @@ public class SketchfabIntegration : MonoBehaviour
         }
         else
         {
+            onFailed?.Invoke();
             active = true;
         }
     }
@@ -129,6 +134,6 @@ public class SketchfabIntegration : MonoBehaviour
     {
         Debug.Log("Download finished");
         active = true;
-        onFinished?.Invoke(model);
+        onFinished?.Invoke(model, modelName);
     }
 }
