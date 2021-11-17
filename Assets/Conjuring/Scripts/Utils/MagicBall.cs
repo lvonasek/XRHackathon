@@ -6,12 +6,12 @@ public class MagicBall : MonoBehaviour
 {
     [SerializeField]
     private TextMesh handText;
-    
+
     private List<GameObject> handObjects;
     private List<GameObject> toDestroy;
     private string lastFeedback;
     private string toRestore;
-    
+
     void Awake()
     {
         if (handObjects == null)
@@ -21,13 +21,13 @@ public class MagicBall : MonoBehaviour
             toRestore = "";
         }
     }
-    
+
     void Update()
     {
         UpdateObjects();
         UpdateText();
     }
-    
+
     private void UpdateObjects()
     {
         // scale-out
@@ -49,7 +49,7 @@ public class MagicBall : MonoBehaviour
                 go.transform.localScale = Vector3.Lerp(go.transform.localScale, Vector3.one, 0.1f);
             }
         }
-        
+
         // memory cleanup
         if (ok)
         {
@@ -60,7 +60,7 @@ public class MagicBall : MonoBehaviour
             toDestroy.Clear();
         }
     }
-    
+
     private void UpdateText()
     {
         if (transform.localScale.y > 0)
@@ -75,7 +75,7 @@ public class MagicBall : MonoBehaviour
             lastFeedback = null;
         }
     }
-    
+
     public void AssignToHand(GameObject instance)
     {
         GameObject model = new GameObject();
@@ -89,7 +89,7 @@ public class MagicBall : MonoBehaviour
         model.transform.localRotation = rotation;
         model.transform.localScale = Vector3.zero;
     }
-    
+
     public void DestroyHandObjects()
     {
         toDestroy = handObjects;

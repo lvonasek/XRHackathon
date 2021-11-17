@@ -21,8 +21,8 @@ namespace Sketchfab
 		string _currentSampleName = "Imported";
 		bool _addToCurrentScene = false;
 		string _gltfInput;
-        
-        public Action<GameObject> onFinished;
+
+		public Action<GameObject> onFinished;
 
 		public void configure(string prefabName, bool addToScene = false)
 		{
@@ -82,7 +82,7 @@ namespace Sketchfab
 		}
 
 		private void DeleteDirectory(string path)
-        {
+		{
 			foreach (string dir in Directory.GetDirectories(path))
 			{
 				DeleteDirectory(dir);
@@ -90,14 +90,14 @@ namespace Sketchfab
 			foreach (string file in Directory.GetFiles(path))
 			{
 				File.Delete(file);
-            }
+			}
 			Directory.Delete(path);
-        }
+		}
 
 		public void loadFromBuffer(byte[] data)
 		{
 			if (Directory.Exists(_unzipDirectory))
-            {
+			{
 				DeleteDirectory(_unzipDirectory);
 			}
 			Directory.CreateDirectory(_unzipDirectory);
@@ -118,13 +118,13 @@ namespace Sketchfab
 		private void OnFinishAsync(GameObject result, AnimationClip[] animations)
 		{
 			Debug.Log("Finished importing " + result.name);
-            onFinished?.Invoke(result);
+			onFinished?.Invoke(result);
 		}
 
 		private bool isSupportedFile(string filepath)
 		{
 			string ext = Path.GetExtension(filepath);
-			return (ext == ".gltf" || ext == ".glb");			
+			return (ext == ".gltf" || ext == ".glb");
 		}
 	}
 }

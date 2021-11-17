@@ -20,7 +20,7 @@ public class VRPointer : MonoBehaviour
         {
             return;
         }
-        
+
         // Get raycaster
         if (raycaster == null)
         {

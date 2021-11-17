@@ -195,7 +195,7 @@ namespace Sketchfab
 		{
 			PlayerPrefs.DeleteKey(accessTokenKey);
 			_current = null;
-            _isLogging = false;
+			_isLogging = false;
 			_isUserLogged = false;
 			_hasCheckedSession = true;
 		}
@@ -206,7 +206,7 @@ namespace Sketchfab
 			formData.Add(new MultipartFormDataSection("username", user_name));
 			formData.Add(new MultipartFormDataSection("password", user_password));
 
-            _isLogging = true;
+			_isLogging = true;
 			SketchfabRequest tokenRequest = new SketchfabRequest(SketchfabPlugin.Urls.oauth, formData);
 			tokenRequest.setCallback(handleGetToken);
 			tokenRequest.setFailedCallback(onLoginFailed);
@@ -225,17 +225,17 @@ namespace Sketchfab
 			string access_token = parseAccessToken(response);
 			PlayerPrefs.SetString("skfb_username", username);
 			if (access_token != null)
-            {
-                PlayerPrefs.SetString(accessTokenKey, access_token);
-            }
+			{
+				PlayerPrefs.SetString(accessTokenKey, access_token);
+			}
 			if (_current == null)
 			{
 				requestUserData();
 			}
 			else
-            {
-                _isLogging = false;
-            }
+			{
+				_isLogging = false;
+			}
 		}
 
 		private string parseAccessToken(string text)
@@ -351,7 +351,7 @@ namespace Sketchfab
 			_current = new SketchfabProfile(userData["username"], userData["displayName"], userData["account"]);
 			requestAvatar(getAvatarUrl(userData));
 			_isUserLogged = true;
-            _isLogging = false;
+			_isLogging = false;
 			_hasCheckedSession = true;
 		}
 

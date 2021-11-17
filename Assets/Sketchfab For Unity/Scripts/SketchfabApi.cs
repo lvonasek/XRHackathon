@@ -67,7 +67,7 @@ namespace Sketchfab
 			}
 
 			readable = Mathf.Round(readable * 100) / 100;
-			
+
 			return readable.ToString().Replace(',', '.') + suffix;
 		}
 	}
@@ -102,7 +102,7 @@ namespace Sketchfab
 			if (_requests == null || _requests.Count == 0)
 				return;
 
-			for(int i = 0; i< _requests.Count; ++i)
+			for (int i = 0; i < _requests.Count; ++i)
 			{
 				if (_requests[i] != null && _requests[i].isValid())
 				{
@@ -131,7 +131,7 @@ namespace Sketchfab
 			// Remove disposed requests
 			for (int i = _requests.Count - 1; i >= 0; --i)
 			{
-				if(_requests[i] == null)
+				if (_requests[i] == null)
 				{
 					_requests.RemoveAt(i);
 				}
@@ -166,10 +166,10 @@ namespace Sketchfab
 		WebRequestCallback _webRequestCallback;
 		ProgressCallback _progressCallback;
 
-		public SketchfabRequest(string url, Dictionary<string, string> headers=null)
+		public SketchfabRequest(string url, Dictionary<string, string> headers = null)
 		{
 			_request = new UnityWebRequest(url);
-			if(headers != null)
+			if (headers != null)
 			{
 				foreach (string key in headers.Keys)
 				{
@@ -225,7 +225,7 @@ namespace Sketchfab
 		public void setCallback(DataRequestCallback cb)
 		{
 			_dataCallback = cb;
-			if(_request.downloadHandler == null)
+			if (_request.downloadHandler == null)
 			{
 				_request.downloadHandler = new DownloadHandlerBuffer();
 			}
@@ -266,14 +266,14 @@ namespace Sketchfab
 				_webRequestCallback(_request);
 		}
 
-		public  void setProgressCallback(ProgressCallback callback)
+		public void setProgressCallback(ProgressCallback callback)
 		{
 			_progressCallback = callback;
 		}
 
 		public void dispose()
 		{
-			if(_request != null)
+			if (_request != null)
 			{
 				_request.Dispose();
 				_request = null;
@@ -318,7 +318,7 @@ namespace Sketchfab
 
 		public void getProgress()
 		{
-			if(_progressCallback != null)
+			if (_progressCallback != null)
 			{
 				if (_request.uploadHandler != null)
 					_progressCallback(_request.uploadProgress);

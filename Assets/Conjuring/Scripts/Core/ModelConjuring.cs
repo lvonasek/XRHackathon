@@ -22,29 +22,29 @@ public class ModelConjuring : MonoBehaviour
     private OVRCameraRig tracking;
     [SerializeField]
     private AppVoiceExperience voice;
-    
+
     private MagicBall targetAnchor;
     private int voiceCount;
-    
+
     void OnDisable()
     {
         sketchfab.onFailed -= OnModelFailed;
         sketchfab.onFinished -= OnModelCreated;
         voice.events.OnRequestCreated.RemoveListener(OnVoiceRequest);
     }
-    
+
     void OnEnable()
     {
         sketchfab.onFailed += OnModelFailed;
         sketchfab.onFinished += OnModelCreated;
         voice.events.OnRequestCreated.AddListener(OnVoiceRequest);
-        
+
         if (Application.isEditor)
         {
             SetVoiceInput(true);
         }
     }
-    
+
     void Update()
     {
         UpdateHand(true);
@@ -69,7 +69,7 @@ public class ModelConjuring : MonoBehaviour
             SetVoiceInput(isVoiceActive);
         }
     }
-    
+
     void OnModelCreated(GameObject model, string modelName)
     {
         ScaleObject(model);
@@ -77,13 +77,13 @@ public class ModelConjuring : MonoBehaviour
         targetAnchor.AssignToHand(model);
         targetAnchor.SetText(modelName);
     }
-    
+
     void OnModelFailed()
     {
         Debug.Log("Model query failed");
         targetAnchor.AddText("Model not found");
     }
-    
+
     void OnVoiceResponse(string text)
     {
         Debug.Log("Recognized test: " + text);
@@ -94,21 +94,21 @@ public class ModelConjuring : MonoBehaviour
         if (text.StartsWith("an ")) text = text.Substring(3);
         if (text.StartsWith("the ")) text = text.Substring(4);
         targetAnchor.SetText(text);
-        
+
         sketchfab.RequestObject(text);
     }
-    
+
     void OnVoiceRequest(WitRequest request)
     {
-        request.onFullTranscription += OnVoiceResponse;   
+        request.onFullTranscription += OnVoiceResponse;
     }
-    
+
     private void ScaleObject(GameObject model)
     {
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         model.transform.localScale = Vector3.one;
-        
+
         List<Vector3> toTest = new List<Vector3>();
         foreach (MeshRenderer renderer in model.GetComponentsInChildren<MeshRenderer>())
         {
@@ -122,7 +122,7 @@ public class ModelConjuring : MonoBehaviour
             toTest.Add(renderer.bounds.max);
             toTest.Add(renderer.bounds.min);
         }
-        
+
         Vector3 min = Vector3.one * int.MaxValue;
         Vector3 max = Vector3.one * int.MinValue;
         foreach (Vector3 v in toTest)
@@ -130,19 +130,19 @@ public class ModelConjuring : MonoBehaviour
             if (min.x > v.x) min.x = v.x;
             if (min.y > v.y) min.y = v.y;
             if (min.z > v.z) min.z = v.z;
-                
+
             if (max.x < v.x) max.x = v.x;
             if (max.y < v.y) max.y = v.y;
             if (max.z < v.z) max.z = v.z;
         }
-        
+
         // set scale and position
         Vector3 diff = max - min;
         float size = Mathf.Max(Mathf.Max(diff.x, diff.y), diff.z);
         model.transform.localPosition = Vector3.up * -min.y / size * objectScale;
         model.transform.localScale = Vector3.one * 1.0f / size * objectScale;
     }
-    
+
     private void SetVoiceInput(bool on)
     {
         voiceCount += on ? 1 : -1;
