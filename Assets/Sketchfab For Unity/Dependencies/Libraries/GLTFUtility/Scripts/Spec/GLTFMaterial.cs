@@ -36,6 +36,8 @@ namespace Siccity.GLTFUtility {
 		public IEnumerator CreateMaterial(GLTFTexture.ImportResult[] textures, ShaderSettings shaderSettings, Action<Material> onFinish) {
 			Material mat = null;
 			IEnumerator en = null;
+			alphaMode = AlphaMode.OPAQUE;
+
 			// Load metallic-roughness materials
 			if (pbrMetallicRoughness != null) {
 				en = pbrMetallicRoughness.CreateMaterial(textures, alphaMode, shaderSettings, x => mat = x);
@@ -93,9 +95,9 @@ namespace Siccity.GLTFUtility {
 				while (en.MoveNext()) { yield return null; };
 			}
 
-			if (alphaMode == AlphaMode.MASK) {
+			/*if (alphaMode == AlphaMode.MASK) {
 				mat.SetFloat("_AlphaCutoff", alphaCutoff);
-			}
+			}*/
 			mat.name = name;
 			onFinish(mat);
 		}
