@@ -8,8 +8,6 @@ using UnityEngine;
 public class ModelConjuring : MonoBehaviour
 {
     [SerializeField]
-    private float magicBallScale = 0.1f;
-    [SerializeField]
     private float objectScale = 0.2f;
 
     [SerializeField]
@@ -24,7 +22,6 @@ public class ModelConjuring : MonoBehaviour
     private AppVoiceExperience voice;
 
     private MagicBall targetAnchor;
-    private int voiceCount;
 
     void OnDisable()
     {
@@ -47,26 +44,28 @@ public class ModelConjuring : MonoBehaviour
 
     void Update()
     {
-        UpdateHand(true);
-        UpdateHand(false);
+        UpdateHand(tracking.leftHandAnchor, leftHandMagicBall);
+        UpdateHand(tracking.rightHandAnchor, rightHandMagicBall);
     }
 
-    void UpdateHand(bool leftHand)
+    void UpdateHand(Transform hand, MagicBall magicBall)
     {
-        Transform hand = leftHand ? tracking.leftHandAnchor : tracking.rightHandAnchor;
-        GameObject magicBall = leftHand ? leftHandMagicBall.gameObject : rightHandMagicBall.gameObject;
-        bool wasVoiceActive = magicBall.transform.localScale.magnitude > 0.5f * magicBallScale;
         float distanceToHand = (hand.position - tracking.centerEyeAnchor.position).magnitude;
-        float targetBallScale = distanceToHand < 0.35f ? magicBallScale : 0;
-        magicBall.transform.localScale = Vector3.Lerp(magicBall.transform.localScale, targetBallScale * Vector3.one, 0.1f);
-        bool isVoiceActive = magicBall.transform.localScale.magnitude > 0.5f * magicBallScale;
-        if (wasVoiceActive != isVoiceActive)
+        bool shouldActive = distanceToHand < 0.35f;
+
+        if (shouldActive && (leftHandMagicBall.GetStatus() == MagicBall.Status.IDLE) && (rightHandMagicBall.GetStatus() == MagicBall.Status.IDLE))
         {
-            if (isVoiceActive)
-            {
-                targetAnchor = leftHand ? leftHandMagicBall : rightHandMagicBall;
-            }
-            SetVoiceInput(isVoiceActive);
+            targetAnchor = magicBall;
+            targetAnchor.SetStatus(MagicBall.Status.ACTIVE);
+            SetVoiceInput(true);
+        } else if (!shouldActive && (magicBall.GetStatus() == MagicBall.Status.ACTIVE))
+        {
+            magicBall.SetStatus(MagicBall.Status.IDLE);
+            SetVoiceInput(false);
+        } else if (!shouldActive && (magicBall.GetStatus() == MagicBall.Status.DONE))
+        {
+            magicBall.SetStatus(MagicBall.Status.IDLE);
+            SetVoiceInput(false);
         }
     }
 
@@ -76,12 +75,14 @@ public class ModelConjuring : MonoBehaviour
         targetAnchor.DestroyHandObjects();
         targetAnchor.AssignToHand(model);
         targetAnchor.SetText(modelName);
+        targetAnchor.SetStatus(MagicBall.Status.BUILD);
     }
 
-    void OnModelFailed()
+    void OnModelFailed(string reason)
     {
-        Debug.Log("Model query failed");
-        targetAnchor.AddText("Model not found");
+        targetAnchor.AddText(reason);
+        targetAnchor.SetStatus(MagicBall.Status.IDLE);
+        SetVoiceInput(false);
     }
 
     void OnVoiceResponse(string text)
@@ -93,8 +94,9 @@ public class ModelConjuring : MonoBehaviour
         if (text.StartsWith("a ")) text = text.Substring(2);
         if (text.StartsWith("an ")) text = text.Substring(3);
         if (text.StartsWith("the ")) text = text.Substring(4);
-        targetAnchor.SetText(text);
 
+        targetAnchor.SetStatus(MagicBall.Status.DOWNLOAD);
+        targetAnchor.SetText(text);
         sketchfab.RequestObject(text);
     }
 
@@ -145,12 +147,11 @@ public class ModelConjuring : MonoBehaviour
 
     private void SetVoiceInput(bool on)
     {
-        voiceCount += on ? 1 : -1;
-        if (voice.Active && (voiceCount == 0))
+        if (voice.Active && !on)
         {
             voice.Deactivate();
         }
-        else if (!voice.Active && (voiceCount > 0))
+        else if (!voice.Active && on)
         {
             voice.Activate();
         }

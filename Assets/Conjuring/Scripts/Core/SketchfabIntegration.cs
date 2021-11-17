@@ -10,6 +10,8 @@ public class SketchfabIntegration : MonoBehaviour
 
     [SerializeField]
     private int maxFaces = 25000;
+    [SerializeField]
+    private float maxSizeMB = 5;
 
     private SketchfabLogger auth;
     private SketchfabAPI api;
@@ -19,7 +21,7 @@ public class SketchfabIntegration : MonoBehaviour
     private string modelName;
     private bool active;
 
-    public Action onFailed;
+    public Action<string> onFailed;
     public Action<GameObject, string> onFinished;
 
     public SketchfabLogger GetAuth()
@@ -58,7 +60,10 @@ public class SketchfabIntegration : MonoBehaviour
 
     void Update()
     {
-        api.Update();
+        if (!api.Update())
+        {
+            onFailed?.Invoke("Communication failed");
+        }
 
         if (auth.isUserLogged() && active && (requestedObjects.Count > 0))
         {
@@ -83,6 +88,16 @@ public class SketchfabIntegration : MonoBehaviour
         JSONNode responseJson = Utils.JSONParse(response)["results"]["models"];
         foreach (JSONNode model in responseJson.AsArray)
         {
+            if ((model["archives"] == null) || (model["archives"]["gltf"] == null) || (model["archives"]["gltf"]["size"] == null))
+            {
+                continue;
+            }
+            float sizeMB = int.Parse(model["archives"]["gltf"]["size"]) / (float)(1024 * 1024);
+            if (sizeMB > maxSizeMB)
+            {
+                continue;
+            }
+
             if (length > model["name"].ToString().Length)
             {
                 length = model["name"].ToString().Length;
@@ -103,7 +118,7 @@ public class SketchfabIntegration : MonoBehaviour
         }
         else
         {
-            onFailed?.Invoke();
+            onFailed?.Invoke("Model not found");
             active = true;
         }
     }
@@ -119,7 +134,7 @@ public class SketchfabIntegration : MonoBehaviour
         }
         else
         {
-            onFailed?.Invoke();
+            onFailed?.Invoke("Model not valid");
             active = true;
         }
     }

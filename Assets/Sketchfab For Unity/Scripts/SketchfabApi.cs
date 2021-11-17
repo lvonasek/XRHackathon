@@ -97,10 +97,11 @@ namespace Sketchfab
 		/// Consume them if success
 		/// Logs errors if they failed
 		/// </summary>
-		public void Update()
+		public bool Update()
 		{
+			bool output = true;
 			if (_requests == null || _requests.Count == 0)
-				return;
+				return output;
 
 			for (int i = 0; i < _requests.Count; ++i)
 			{
@@ -115,6 +116,7 @@ namespace Sketchfab
 						else
 						{
 							Debug.Log(_requests[i].getError());
+							output = false;
 						}
 
 						_requests[i].dispose();
@@ -136,6 +138,7 @@ namespace Sketchfab
 					_requests.RemoveAt(i);
 				}
 			}
+			return output;
 		}
 
 		public void dropRequest(ref SketchfabRequest request)

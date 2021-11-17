@@ -1638,7 +1638,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c4b98c6787cfc41c9fdc94e64a16de4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  magicBallScale: 0.1
   objectScale: 0.2
   leftHandMagicBall: {fileID: 967331443204807999}
   rightHandMagicBall: {fileID: 2090181322}
@@ -1675,6 +1674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxFaces: 25000
+  maxSizeMB: 5
 --- !u!4 &1045641984
 Transform:
   m_ObjectHideFlags: 0
