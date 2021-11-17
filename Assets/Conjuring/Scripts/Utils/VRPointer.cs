@@ -5,14 +5,19 @@ using UnityEngine.UI;
 
 public class VRPointer : MonoBehaviour
 {
-    public LineRenderer laser;
-    public GameObject pointer;
-    public static bool showLaser = true;
+    [SerializeField]
+    private LineRenderer laser;
+    [SerializeField]
+    private GameObject pointer;
+    [SerializeField]
+    private OVRSkeleton skeleton;
 
     private GraphicRaycaster raycaster;
     private OVRCameraRig vrCamera;
     private InputField activeInput;
     private TouchScreenKeyboard keyboard;
+    private Vector3 lastPosition;
+    private float lastTouch;
 
     void Update()
     {
@@ -42,15 +47,50 @@ public class VRPointer : MonoBehaviour
         }
 
         // Update laser
-        laser.enabled = OVRManager.hasInputFocus && showLaser;
-        laser.SetPosition(0, transform.position + transform.forward * 0.25f);
-        laser.SetPosition(1, transform.position + transform.forward * 2.0f);
+        bool touch = false;
+        if (IsHandModeOn())
+        {
+            Vector3 index = Vector3.zero;
+            Vector3 thumb = Vector3.zero;
+            foreach (OVRBone bone in skeleton.Bones)
+            {
+                if (bone.Id == OVRSkeleton.BoneId.Hand_IndexTip)
+                {
+                    index = bone.Transform.position;
+                }
+                if (bone.Id == OVRSkeleton.BoneId.Hand_ThumbTip)
+                {
+                    thumb = bone.Transform.position;
+                }
+            }
+            laser.enabled = false;
+            laser.SetPosition(0, (thumb + index) * 0.5f);
+            laser.SetPosition(1, index);
+
+            if ((index - thumb).magnitude < 0.01f)
+            {
+                if (Time.time - lastTouch > 1)
+                {
+                    lastTouch = Time.time;
+                    touch = true;
+                }
+            }
+        }
+        else
+        {
+            laser.enabled = OVRManager.hasInputFocus;
+            laser.SetPosition(0, transform.position + transform.forward * 0.25f);
+            laser.SetPosition(1, transform.position + transform.forward * 2.0f);
+        }
         pointer.SetActive(false);
 
         // Get pointer position
-        EventSystem.current.SetSelectedGameObject(null);
+        if (!IsHandModeOn())
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
         PointerEventData data = new PointerEventData(EventSystem.current);
-        Vector3 position3d = transform.position + transform.forward * 2.0f;
+        Vector3 position3d = laser.GetPosition(1);
         Vector3 position2d = Camera.main.WorldToScreenPoint(position3d);
         if (Application.isEditor)
         {
@@ -71,9 +111,12 @@ public class VRPointer : MonoBehaviour
             // Select item under cursor
             foreach (RaycastResult result in results)
             {
-                laser.SetPosition(1, result.worldPosition);
+                float lerp = IsHandModeOn() ? 0.1f : 1.0f;
+                lastPosition = Vector3.Lerp(lastPosition, result.worldPosition, lerp);
+                laser.SetPosition(1, lastPosition);
+                laser.enabled = (laser.GetPosition(1) - laser.GetPosition(0)).magnitude > 0.5f;
                 pointer.SetActive(true);
-                pointer.transform.position = result.worldPosition;
+                pointer.transform.position = lastPosition;
                 if ((result.gameObject.GetComponent<Button>() != null) || (result.gameObject.GetComponent<InputField>() != null))
                 {
                     EventSystem.current.SetSelectedGameObject(result.gameObject);
@@ -81,7 +124,7 @@ public class VRPointer : MonoBehaviour
             }
 
             // Click
-            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch) || touch)
             {
                 GameObject selected = EventSystem.current.currentSelectedGameObject;
                 if (selected != null)
@@ -100,5 +143,10 @@ public class VRPointer : MonoBehaviour
                 }
             }
         }
+    }
+
+    private bool IsHandModeOn()
+    {
+        return skeleton.IsDataValid || (transform.position.magnitude < 0.01f);
     }
 }
