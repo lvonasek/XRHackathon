@@ -25,7 +25,7 @@ namespace Siccity.GLTFUtility {
 		public TextureInfo emissiveTexture;
 		[JsonConverter(typeof(ColorRGBConverter))] public Color emissiveFactor = Color.black;
 		[JsonConverter(typeof(EnumConverter))] public AlphaMode alphaMode = AlphaMode.OPAQUE;
-		public float alphaCutoff = 0.5f;
+		public float alphaCutoff = 1.0f;
 		public bool doubleSided = false;
 		public Extensions extensions;
 
@@ -36,7 +36,6 @@ namespace Siccity.GLTFUtility {
 		public IEnumerator CreateMaterial(GLTFTexture.ImportResult[] textures, ShaderSettings shaderSettings, Action<Material> onFinish) {
 			Material mat = null;
 			IEnumerator en = null;
-			alphaMode = AlphaMode.OPAQUE;
 
 			// Load metallic-roughness materials
 			if (pbrMetallicRoughness != null) {
@@ -95,9 +94,9 @@ namespace Siccity.GLTFUtility {
 				while (en.MoveNext()) { yield return null; };
 			}
 
-			/*if (alphaMode == AlphaMode.MASK) {
+			if (alphaMode == AlphaMode.MASK) {
 				mat.SetFloat("_AlphaCutoff", alphaCutoff);
-			}*/
+			}
 			mat.name = name;
 			onFinish(mat);
 		}
