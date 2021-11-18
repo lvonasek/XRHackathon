@@ -132,6 +132,12 @@ public class MagicBall : MonoBehaviour
 
     private void UpdateObjects()
     {
+        // set visibility
+        foreach (GameObject go in handObjects)
+        {
+            go.SetActive(OVRManager.hasInputFocus);
+        }
+
         // scale-out
         bool done = true;
         foreach (GameObject go in toDestroy)
