@@ -63,6 +63,10 @@ public class ModelConjuring : MonoBehaviour
         {
             magicBall.SetStatus(MagicBall.Status.IDLE);
             SetVoiceInput(false);
+        } else if (!voice.Active && (magicBall.GetStatus() == MagicBall.Status.ACTIVE))
+        {
+            magicBall.SetStatus(MagicBall.Status.DONE);
+            SetVoiceInput(false);
         } else if (!shouldActive && (magicBall.GetStatus() == MagicBall.Status.DONE))
         {
             magicBall.SetStatus(MagicBall.Status.IDLE);

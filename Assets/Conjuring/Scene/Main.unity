@@ -2307,6 +2307,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadingSpeed: 0.03
   sfx: {fileID: 1470775704}
+  voice: {fileID: 51427957581113465}
 --- !u!1 &1490182533
 GameObject:
   m_ObjectHideFlags: 0
@@ -3835,10 +3836,10 @@ MonoBehaviour:
   witRuntimeConfiguration:
     witConfiguration: {fileID: 11400000, guid: 4daf366438490f17488e5be2f6b75f4a, type: 2}
     minKeepAliveVolume: 0.0005
-    minKeepAliveTimeInSeconds: 2
+    minKeepAliveTimeInSeconds: 5
     minTranscriptionKeepAliveTimeInSeconds: 1
     maxRecordingTime: 20
-    soundWakeThreshold: 0.0005
+    soundWakeThreshold: 0
     sampleLengthInMs: 10
     micBufferLengthInSeconds: 1
     sendAudioToWit: 1
