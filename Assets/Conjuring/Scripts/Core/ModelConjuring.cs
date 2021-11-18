@@ -112,6 +112,7 @@ public class ModelConjuring : MonoBehaviour
         model.transform.localRotation = Quaternion.Euler(-90, 0, 0);
         model.transform.localScale = Vector3.one;
 
+        // get all bounding boxes
         List<Vector3> toTest = new List<Vector3>();
         foreach (MeshRenderer renderer in model.GetComponentsInChildren<MeshRenderer>())
         {
@@ -126,6 +127,7 @@ public class ModelConjuring : MonoBehaviour
             toTest.Add(renderer.bounds.min);
         }
 
+        // calculate bounding box of whole object
         Vector3 min = Vector3.one * int.MaxValue;
         Vector3 max = Vector3.one * int.MinValue;
         foreach (Vector3 v in toTest)
@@ -139,11 +141,17 @@ public class ModelConjuring : MonoBehaviour
             if (max.z < v.z) max.z = v.z;
         }
 
-        // set scale and position
+        // set scale
         Vector3 diff = max - min;
         float size = Mathf.Max(Mathf.Max(diff.x, diff.y), diff.z);
-        model.transform.localPosition = Vector3.up * -min.y / size * objectScale;
         model.transform.localScale = Vector3.one * 1.0f / size * objectScale;
+
+        // set position
+        min = min / size * objectScale;
+        max = max / size * objectScale;
+        Vector3 position = (max + min) / 2.0f;
+        position.y = min.y;
+        model.transform.localPosition = -position;
     }
 
     private void SetVoiceInput(bool on)
