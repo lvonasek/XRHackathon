@@ -42,7 +42,8 @@ public class MagicBall : MonoBehaviour
 
     void Update()
     {
-        UpdateMagicBall();
+        UpdateMagicBallPose();
+        UpdateMagicBallScale();
         UpdateObjects();
         UpdateText();
     }
@@ -62,26 +63,38 @@ public class MagicBall : MonoBehaviour
         return skeleton.IsDataValid || (transform.position.magnitude < 0.01f);
     }
 
-    private void UpdateMagicBall()
+    private void UpdateMagicBallPose()
     {
-        // update position and rotation
         if (IsHandModeOn())
         {
+            Vector3 index = Vector3.zero;
+            Vector3 thumb = Vector3.zero;
             Vector3 position = Vector3.zero;
+            Quaternion rotation = Quaternion.identity;
             foreach (OVRBone bone in skeleton.Bones)
             {
+                if (bone.Id == OVRSkeleton.BoneId.Hand_IndexTip)
+                {
+                    index = bone.Transform.position;
+                }
+                if (bone.Id == OVRSkeleton.BoneId.Hand_ThumbTip)
+                {
+                    thumb = bone.Transform.position;
+                }
                 position += bone.Transform.position;
             }
             position /= (float)skeleton.Bones.Count;
-            transform.position = position + Vector3.up * 0.1f;
-            transform.rotation = Quaternion.identity;
+            rotation = Quaternion.LookRotation(index - thumb, Vector3.up);
+            transform.rotation = rotation;
+            transform.position = position + transform.up * 0.1f;
 
             foreach (GameObject go in handObjects)
             {
+                go.transform.rotation = rotation;
                 go.transform.position = position;
-                go.transform.rotation = Quaternion.identity;
             }
-        } else
+        }
+        else
         {
             transform.localPosition = Vector3.up * 0.1f;
             transform.localRotation = Quaternion.identity;
@@ -92,8 +105,10 @@ public class MagicBall : MonoBehaviour
                 go.transform.localRotation = Quaternion.identity;
             }
         }
+    }
 
-        // update scale and attached text
+    private void UpdateMagicBallScale()
+    {
         switch (status)
         {
             case Status.DONE:
