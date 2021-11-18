@@ -25,7 +25,7 @@ namespace Siccity.GLTFUtility {
 		public TextureInfo emissiveTexture;
 		[JsonConverter(typeof(ColorRGBConverter))] public Color emissiveFactor = Color.black;
 		[JsonConverter(typeof(EnumConverter))] public AlphaMode alphaMode = AlphaMode.OPAQUE;
-		public float alphaCutoff = 1.0f;
+		public float alphaCutoff = 0.5f;
 		public bool doubleSided = false;
 		public Extensions extensions;
 
@@ -36,6 +36,9 @@ namespace Siccity.GLTFUtility {
 		public IEnumerator CreateMaterial(GLTFTexture.ImportResult[] textures, ShaderSettings shaderSettings, Action<Material> onFinish) {
 			Material mat = null;
 			IEnumerator en = null;
+#if UNITY_ANDROID
+			alphaMode = AlphaMode.OPAQUE;
+#endif
 
 			// Load metallic-roughness materials
 			if (pbrMetallicRoughness != null) {
