@@ -16,21 +16,9 @@ namespace Sketchfab
 {
 	class SketchfabImporter
 	{
-		// Settings
 		string _unzipDirectory = Application.temporaryCachePath + "/unzip";
-		string _currentSampleName = "Imported";
-		bool _addToCurrentScene = false;
-		string _gltfInput;
 
 		public Action<GameObject> onFinished;
-
-		public void configure(string prefabName, bool addToScene = false)
-		{
-			if (prefabName.Length > 0)
-				_currentSampleName = prefabName;
-
-			_addToCurrentScene = addToScene;
-		}
 
 		private string findGltfFile(string directory)
 		{
@@ -112,10 +100,17 @@ namespace Sketchfab
 			}
 			string zip = unzipGltfArchive(temp);
 			string gltf = findGltfFile(_unzipDirectory);
-			Importer.ImportGLTFAsync(gltf, new ImportSettings(), OnFinishAsync);
+			if (Application.isEditor)
+            {
+				GameObject result = Importer.LoadFromFile(gltf, new ImportSettings(), out AnimationClip[] animations);
+				OnFinish(result, animations);
+			} else
+            {
+				Importer.ImportGLTFAsync(gltf, new ImportSettings(), OnFinish);
+			}
 		}
 
-		private void OnFinishAsync(GameObject result, AnimationClip[] animations)
+		private void OnFinish(GameObject result, AnimationClip[] animations)
 		{
 			Debug.Log("Finished importing " + result.name);
 			onFinished?.Invoke(result);

@@ -141,7 +141,6 @@ public class SketchfabIntegration : MonoBehaviour
 
     void HandleArchive(byte[] data)
     {
-        importer.configure("", true);
         importer.loadFromBuffer(data);
     }
 

@@ -17,10 +17,6 @@ namespace Sketchfab
 		SketchfabModel _currentModel;
 		SketchfabUI _ui;
 		SketchfabBrowser _window;
-
-		string _prefabName;
-		string _importDirectory;
-		bool _addToCurrentScene;
 		SketchfabRequest _modelRequest;
 
 		bool show = false;
@@ -38,17 +34,7 @@ namespace Sketchfab
 		public void displayModelPage(SketchfabModel model, SketchfabBrowser browser)
 		{
 			_window = browser;
-			if(_currentModel == null || model.uid != _currentModel.uid)
-			{
-				_currentModel = model;
-				_prefabName = _currentModel.name.Replace(" ", "_");
-				_importDirectory = Application.dataPath + "/Import/" + _prefabName.Replace(" ", "_");
-			}
-			else
-			{
-				_currentModel = model;
-			}
-
+			_currentModel = model;
 			_ui = SketchfabPlugin.getUI();
 			show = true;
 		}
@@ -188,25 +174,16 @@ namespace Sketchfab
 			}
 		}
 
-		void onChangImportDirectoryClick()
-		{
-			string newImportDir = EditorUtility.OpenFolderPanel("Choose import directory", Application.dataPath, "");
-			_importDirectory = newImportDir;
-		}
-
 		void onImportModelClick()
 		{
-			if (!assetAlreadyExists() || EditorUtility.DisplayDialog("Override asset", "The asset " + _prefabName + " already exists in project. Do you want to override it ?", "Override", "Cancel"))
+			// Reuse if still valid
+			if (_currentModel.tempDownloadUrl.Length > 0 && EditorApplication.timeSinceStartup - _currentModel.downloadRequestTime < _currentModel.urlValidityDuration)
 			{
-				// Reuse if still valid
-				if (_currentModel.tempDownloadUrl.Length > 0 && EditorApplication.timeSinceStartup - _currentModel.downloadRequestTime < _currentModel.urlValidityDuration)
-				{
-					requestArchive(_currentModel.tempDownloadUrl);
-				}
-				else
-				{
-					fetchGLTFModel(_currentModel.uid, OnArchiveUpdate, _window._logger.getHeader());
-				}
+				requestArchive(_currentModel.tempDownloadUrl);
+			}
+			else
+			{
+				fetchGLTFModel(_currentModel.uid, OnArchiveUpdate, _window._logger.getHeader());
 			}
 		}
 
@@ -262,30 +239,8 @@ namespace Sketchfab
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();
 
-				// Import directory in project
-				GUILayout.BeginHorizontal();
-				{
-					_ui.displayModelStats("Import into      ", _importDirectory);
-					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Change", GUILayout.Width(80), GUILayout.Height(18)))
-					{
-						onChangImportDirectoryClick();
-					}
-				}
-				GUILayout.EndHorizontal();
-
 				// random space
-				GUILayout.Space(2);
-
-				// Prefab name
-				GUILayout.BeginHorizontal();
-				GUILayout.Label("Prefab name  ", _ui.getKeyStyle());
-				_prefabName = GUILayout.TextField(_prefabName, GUILayout.MaxWidth(300));
-				GUILayout.FlexibleSpace();
-				GUILayout.EndHorizontal();
-
-				// random space
-				GUILayout.Space(10);
+				GUILayout.Space(12);
 
 				// Big import button
 				GUILayout.BeginHorizontal();
@@ -294,34 +249,16 @@ namespace Sketchfab
 				}
 				GUILayout.EndHorizontal();
 
-				// random space
-				GUILayout.Space(3);
-
-				GUILayout.BeginHorizontal();
-				{
-					GUILayout.FlexibleSpace();
-					_addToCurrentScene = GUILayout.Toggle(_addToCurrentScene, "Instanciate prefab into current scene");
-					GUILayout.FlexibleSpace();
-				}
-				GUILayout.EndHorizontal();
-
 				// random final space
-				GUILayout.Space(5);
+				GUILayout.Space(8);
 			}
 			GUILayout.EndVertical();
-		}
-
-		private bool assetAlreadyExists()
-		{
-			string prefabPath = _importDirectory + "/" + _prefabName + ".prefab";
-			return File.Exists(prefabPath);
 		}
 
 		private void OnArchiveUpdate()
 		{
 			Debug.Log("Download finished");
-			string _unzipDirectory = Application.temporaryCachePath + "/unzip";
-			_window._browserManager.importArchive(_lastArchive, _unzipDirectory, _importDirectory, _prefabName, _addToCurrentScene);
+			_window._browserManager.importArchive(_lastArchive);
 		}
 
 		public void fetchGLTFModel(string uid, RefreshCallback fetchedCallback, Dictionary<string, string> headers)
