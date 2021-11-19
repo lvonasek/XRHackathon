@@ -72,6 +72,10 @@ public class MagicBall : MonoBehaviour
      */
     private bool IsHandModeOn()
     {
+        if (Application.isEditor)
+        {
+            return false;
+        }
         return skeleton.IsDataValid || (transform.parent.position.magnitude < 0.01f);
     }
 
@@ -127,6 +131,12 @@ public class MagicBall : MonoBehaviour
      */
     private void UpdateMagicBallScale()
     {
+        if (!OVRManager.hasInputFocus)
+        {
+            transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scalingSpeed);
+            return;
+        }
+
         switch (status)
         {
             case Status.DONE:
