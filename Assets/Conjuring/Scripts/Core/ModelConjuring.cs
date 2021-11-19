@@ -5,6 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Logic of conjuring objects using VoiceSDK and modified Sketchfab integration
+ */
 public class ModelConjuring : MonoBehaviour
 {
     [SerializeField]
@@ -49,6 +52,9 @@ public class ModelConjuring : MonoBehaviour
         UpdateHand(rightHandMagicBall);
     }
 
+    /**
+     * Set state of the magic ball and enable/disable voice input
+     */
     void UpdateHand(MagicBall magicBall)
     {
         float distanceToHand = (magicBall.transform.position - tracking.centerEyeAnchor.position).magnitude;
@@ -74,15 +80,21 @@ public class ModelConjuring : MonoBehaviour
         }
     }
 
+    /**
+     * Callback on successful model creation
+     */
     void OnModelCreated(GameObject model, string modelName)
     {
-        ScaleObject(model);
+        SetObjectTransform(model);
         targetAnchor.DestroyHandObjects();
         targetAnchor.AssignToHand(model);
         targetAnchor.SetText(modelName);
         targetAnchor.SetStatus(MagicBall.Status.BUILD);
     }
 
+    /**
+     * Callback on model creation fail
+     */
     void OnModelFailed(string reason)
     {
         targetAnchor.AddText(reason);
@@ -90,6 +102,17 @@ public class ModelConjuring : MonoBehaviour
         SetVoiceInput(false);
     }
 
+    /**
+     * Callback providing voice request
+     */
+    void OnVoiceRequest(WitRequest request)
+    {
+        request.onFullTranscription += OnVoiceResponse;
+    }
+
+    /**
+     * Callback providing said text as string, which is used as input for Sketchfab search query
+     */
     void OnVoiceResponse(string text)
     {
         Debug.Log("Recognized test: " + text);
@@ -105,12 +128,10 @@ public class ModelConjuring : MonoBehaviour
         sketchfab.RequestObject(text);
     }
 
-    void OnVoiceRequest(WitRequest request)
-    {
-        request.onFullTranscription += OnVoiceResponse;
-    }
-
-    private void ScaleObject(GameObject model)
+    /**
+     * Set object's scale and center position
+     */
+    private void SetObjectTransform(GameObject model)
     {
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(-90, 0, 0);
@@ -158,6 +179,9 @@ public class ModelConjuring : MonoBehaviour
         model.transform.localPosition = -position;
     }
 
+    /**
+     * Enables or disables the voice input
+     */
     private void SetVoiceInput(bool on)
     {
         if (voice.Active && !on)

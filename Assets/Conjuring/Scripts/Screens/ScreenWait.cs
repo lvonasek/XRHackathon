@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Monitoring authentication process and decision of next screen to be shown
+ */
 public class ScreenWait : MonoBehaviour
 {
     [SerializeField]

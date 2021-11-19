@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/**
+ * Using controller or hand, this class integrates usage of UI objects
+ */
 public class VRPointer : MonoBehaviour
 {
     [SerializeField]
@@ -41,6 +44,9 @@ public class VRPointer : MonoBehaviour
         }
     }
 
+    /**
+     * Ensure all necessary objects are instantiated
+     */
     private bool InitObjects()
     {
         if (Application.isEditor)
@@ -71,11 +77,17 @@ public class VRPointer : MonoBehaviour
         return true;
     }
 
+    /**
+     * Detects if hand mode is activated
+     */
     private bool IsHandModeOn()
     {
         return skeleton.IsDataValid || (transform.position.magnitude < 0.01f);
     }
 
+    /**
+     * Updates laser pointer line and detects if there was click gesture used
+     */
     private void UpdateLaser()
     {
         touch = false;
@@ -115,6 +127,9 @@ public class VRPointer : MonoBehaviour
         }
     }
 
+    /**
+     * Raycasts from the hand/controller into UI
+     */
     private void UpdateRaycasting()
     {
         // Reset objects
@@ -139,6 +154,9 @@ public class VRPointer : MonoBehaviour
         raycaster.Raycast(data, results);
     }
 
+    /**
+     * Does a UI action if controller/hand triggered it
+     */
     private void UpdateUIAction()
     {
         if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch) || touch)
@@ -161,6 +179,9 @@ public class VRPointer : MonoBehaviour
         }
     }
 
+    /**
+     * Selects UI object under the cursor and updates laser pointer
+     */
     private void UpdateUISelection()
     {
         foreach (RaycastResult result in results)

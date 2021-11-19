@@ -1,6 +1,9 @@
 ﻿using Oculus.Voice;
 using UnityEngine;
 
+/**
+ * Handling of background music volume
+ */
 public class AudioVolumeHandler : MonoBehaviour
 {
     [SerializeField]

@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Sketchfab login, model searching and downloading integration
+ */
 public class SketchfabIntegration : MonoBehaviour
 {
     private string KEY_USERNAME = "KEY_USERNAME";
@@ -24,16 +27,25 @@ public class SketchfabIntegration : MonoBehaviour
     public Action<string> onFailed;
     public Action<GameObject, string> onFinished;
 
+    /**
+     * Getter of authentication status
+     */
     public SketchfabLogger GetAuth()
     {
         return auth;
     }
 
+    /**
+     * Get the last used username
+     */
     public string GetUsername()
     {
         return PlayerPrefs.GetString(KEY_USERNAME, "");
     }
 
+    /**
+     * Login into Sketchfab and save username
+     */
     public void Login(string username, string password)
     {
         auth.requestAccessToken(username, password);
@@ -42,11 +54,17 @@ public class SketchfabIntegration : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    /**
+     * Add a download 3D model request by a string
+     */
     public void RequestObject(string name)
     {
         requestedObjects.Add(name);
     }
 
+    /**
+     * Init class objects
+     */
     void Awake()
     {
         auth = new SketchfabLogger();
@@ -58,6 +76,9 @@ public class SketchfabIntegration : MonoBehaviour
         importer.onFinished += OnFinished;
     }
 
+    /**
+     * Process 3D model requests and authentication
+     */
     void Update()
     {
         if (!api.Update())
@@ -80,6 +101,9 @@ public class SketchfabIntegration : MonoBehaviour
         }
     }
 
+    /**
+     * Callback receiving search results, selecting the best match and requsting model download
+     */
     void HandleSearch(string response)
     {
         int length = int.MaxValue;
@@ -123,6 +147,9 @@ public class SketchfabIntegration : MonoBehaviour
         }
     }
 
+    /**
+     * Callback receiving 3D model metadata, requesting download of 3D data
+     */
     void HandleDownloadAPIResponse(string response)
     {
         JSONNode responseJson = Utils.JSONParse(response);
@@ -139,14 +166,20 @@ public class SketchfabIntegration : MonoBehaviour
         }
     }
 
+    /**
+     * Callback receiving 3D model data, importing it into scene
+     */
     void HandleArchive(byte[] data)
     {
         importer.loadFromBuffer(data);
     }
 
+    /**
+     * Callback forward 3D model import success to other objects
+     */
     void OnFinished(GameObject model)
     {
-        Debug.Log("Download finished");
+        Debug.Log("Import finished");
         active = true;
         onFinished?.Invoke(model, modelName);
     }

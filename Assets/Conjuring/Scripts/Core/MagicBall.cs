@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Magic ball state handling, assigning and destroying objects
+ */
 public class MagicBall : MonoBehaviour
 {
     public enum Status
@@ -14,6 +17,12 @@ public class MagicBall : MonoBehaviour
         DONE        // ball is not visible
     };
 
+    [SerializeField]
+    private float ballOffset = 0.1f;
+    [SerializeField]
+    private float ballSizeBig = 0.25f;
+    [SerializeField]
+    private float ballSizeNormal = 0.1f;
     [SerializeField]
     private float scalingSpeed = 0.1f;
 
@@ -58,11 +67,17 @@ public class MagicBall : MonoBehaviour
         this.status = status;
     }
 
+    /**
+     * Detects if hand mode is activated
+     */
     private bool IsHandModeOn()
     {
-        return skeleton.IsDataValid || (transform.position.magnitude < 0.01f);
+        return skeleton.IsDataValid || (transform.parent.position.magnitude < 0.01f);
     }
 
+    /**
+     * Updates magic ball position, rotation and assign it to objects
+     */
     private void UpdateMagicBallPose()
     {
         if (IsHandModeOn())
@@ -86,7 +101,7 @@ public class MagicBall : MonoBehaviour
             position /= (float)skeleton.Bones.Count;
             rotation = Quaternion.LookRotation(index - thumb, Vector3.up);
             transform.rotation = rotation;
-            transform.position = position + transform.up * 0.1f;
+            transform.position = position + transform.up * ballOffset;
 
             foreach (GameObject go in handObjects)
             {
@@ -96,7 +111,7 @@ public class MagicBall : MonoBehaviour
         }
         else
         {
-            transform.localPosition = Vector3.up * 0.1f;
+            transform.localPosition = Vector3.up * ballOffset;
             transform.localRotation = Quaternion.identity;
 
             foreach (GameObject go in handObjects)
@@ -107,6 +122,9 @@ public class MagicBall : MonoBehaviour
         }
     }
 
+    /**
+     * Updates magic ball scale based on current status
+     */
     private void UpdateMagicBallScale()
     {
         switch (status)
@@ -117,19 +135,21 @@ public class MagicBall : MonoBehaviour
                 transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scalingSpeed);
                 break;
             case Status.ACTIVE:
-                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one * 0.1f, scalingSpeed);
+                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one * ballSizeNormal, scalingSpeed);
                 break;
             case Status.BUILD:
             case Status.DOWNLOAD:
             case Status.INSTANCE:
                 handText.transform.parent = transform.parent;
                 handText.transform.localScale = Vector3.one * 0.02f;
-                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one * 0.25f, scalingSpeed);
+                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one * ballSizeBig, scalingSpeed);
                 break;
-
         }
     }
 
+    /**
+     * Updates objects transition and handle status BUILD->DONE transition
+     */
     private void UpdateObjects()
     {
         // set visibility
@@ -183,11 +203,14 @@ public class MagicBall : MonoBehaviour
         }
     }
 
+    /**
+     * Updates text string, position and face it to the camera
+     */
     private void UpdateText()
     {
         if (transform.localScale.y > 0.001)
         {
-            handText.transform.position = transform.position - Vector3.up * 0.1f;
+            handText.transform.position = transform.position - Vector3.up * ballOffset;
             handText.transform.rotation = Camera.main.transform.rotation;
         }
         if (lastFeedback != null)
@@ -198,6 +221,9 @@ public class MagicBall : MonoBehaviour
         }
     }
 
+    /**
+     * Add object to the hand (making it follow the hand)
+     */
     public void AssignToHand(GameObject instance)
     {
         GameObject model = new GameObject();
@@ -212,17 +238,26 @@ public class MagicBall : MonoBehaviour
         model.transform.localScale = Vector3.zero;
     }
 
+    /**
+     * Remove all hand objects, will be destroyed by UpdateObjects() method
+     */
     public void DestroyHandObjects()
     {
-        toDestroy = handObjects;
-        handObjects = new List<GameObject>();
+        toDestroy.AddRange(handObjects);
+        handObjects.Clear();
     }
 
+    /**
+     * Extend current text feedback with additional string
+     */
     public void AddText(string text)
     {
         lastFeedback = toRestore + "\n" + text;
     }
 
+    /**
+     * Set current feedback text
+     */
     public void SetText(string text)
     {
         lastFeedback = text;
