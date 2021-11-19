@@ -2,7 +2,8 @@
 This is the first XR experience powered by your imagination. You'll be able to conjure up any object and play with it. The project works on AR/VR Quest headsets. To keep this project completely cost-free, a Sketchfab login is required.
 
 [VIDEO placeholder]
-[APK placeholder]
+
+[Download APK](https://github.com/lvonasek/XRHackathon/releases/download/v0.0.1/XR_Conjuring.apk)
 
 # Used technology
 The project is built using Unity 2019.4.32f1. It uses third party SDKs: 
@@ -26,16 +27,16 @@ In Sketchfab Unity integration following changes were done:
 # Project scripts
 The project scripts are located in `Assets/Conjuring/Scripts`.
 
-`Core` - the main logic
+**Core** - the main logic
 * `MagicBall.cs` - Magic ball state handling, assigning and destroying objects
 * `ModelConjuring.cs` - Logic of conjuring objects using VoiceSDK and modified Sketchfab integration
 * `SketchfabIntegration.cs` - Sketchfab login, model searching and downloading integration
 
-`Screen` - actions called from UI
+**Screen** - actions called from UI
 * `ScreenLogin.cs` - Integrates login screen persistency and actions
 * `ScreenWait.cs` - Monitoring authentication process and decision of next screen to be shown
 
-`Utils` - Audio, UI and other utilities
+**Utils** - Audio, UI and other utilities
 * `AudioVolumeHandler.cs` - Handling of background music volume
 * `UITransform.cs` - Updates UI transformation to be visible to the user
 * `VRPointer.cs` - Using controller or hand, this class integrates usage of UI objects
