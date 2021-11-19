@@ -124,7 +124,7 @@ public class UITransform : MonoBehaviour
             forward.y = 0.0f;
             Vector3 position = Camera.main.transform.position + forward;
             position.y = transform.position.y;
-            transform.position = position;
+            transform.position = Vector3.Lerp(transform.position, position, animationSpeed);
         }
     }
 }
