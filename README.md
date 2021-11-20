@@ -1,7 +1,7 @@
 # Introduction
 This is the first XR experience powered by your imagination. You'll be able to conjure up any object and play with it. The project works on AR/VR Quest headsets. To keep this project completely cost-free, a Sketchfab login is required.
 
-[VIDEO placeholder]
+[![Youtube video](https://user-images.githubusercontent.com/6472545/142728320-d1e61d87-8ef1-4dfb-b5d4-20be6e2b9d3c.png)](https://youtu.be/XpW1Pzdtq3w)
 
 [Download APK](https://github.com/lvonasek/XRHackathon/releases/download/v0.0.1/XR_Conjuring.apk)
 
