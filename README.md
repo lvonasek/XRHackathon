@@ -5,6 +5,12 @@ This is the first XR experience powered by your imagination. You'll be able to c
 
 [Download APK](https://github.com/lvonasek/XRHackathon/releases/download/v0.0.1/XR_Conjuring.apk)
 
+[How to sideload apps on the Oculus Quest](https://www.androidcentral.com/how-sideload-apps-oculus-quest)
+
+# How it works
+![Screenshot_20211121_170704](https://user-images.githubusercontent.com/6472545/142769779-fbc7b204-f5e9-4a56-b533-5600aa79f0bd.png)
+
+
 # Used technology
 The project is built using Unity 2019.4.32f1. It uses third party SDKs: 
 * [Oculus Unity Integration v34](https://developer.oculus.com/downloads/package/unity-integration/34.0/)
